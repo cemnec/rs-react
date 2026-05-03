@@ -15,6 +15,7 @@ interface State {
   page: number;
   loading: boolean;
   error: string | null;
+  hasCrash: boolean;
 }
 
 class App extends React.Component<object, State> {
@@ -25,6 +26,7 @@ class App extends React.Component<object, State> {
     page: 1,
     loading: false,
     error: null,
+    hasCrash: false,
   };
 
   componentDidMount(): void {
@@ -110,7 +112,15 @@ class App extends React.Component<object, State> {
     );
   };
 
+  triggerError = (): void => {
+    this.setState({ hasCrash: true });
+  };
+
   render(): React.ReactNode {
+    if (this.state.hasCrash) {
+      throw new Error('Test error for ErrorBoundary');
+    }
+
     return (
       <main>
         <h1>Rick and Morty Characters</h1>
@@ -121,13 +131,11 @@ class App extends React.Component<object, State> {
           onSearchSubmit={this.handleSearchSubmit}
         />
 
+        <button onClick={this.triggerError}>Throw Error</button>
+
         {this.state.loading && <Loader />}
 
         {this.state.error && <ErrorMessage message={this.state.error} />}
-
-        {!this.state.loading && !this.state.error && (
-          <CardList characters={this.state.characters} />
-        )}
 
         {!this.state.loading && !this.state.error && (
           <>
