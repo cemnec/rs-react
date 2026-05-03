@@ -6,7 +6,7 @@ interface Props {
 
 class ErrorMessage extends React.Component<Props> {
   render(): React.ReactNode {
-    return <p>{this.props.message}</p>;
+    return <p className="error-message">{this.props.message}</p>;
   }
 }
 

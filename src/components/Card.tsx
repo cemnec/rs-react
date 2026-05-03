@@ -11,7 +11,7 @@ class Card extends React.Component<Props> {
     const { character } = this.props;
 
     return (
-      <article>
+      <article className="card">
         <img src={character.image} alt={character.name} width="120" />
         <h2>{character.name}</h2>
         <p>{character.species}</p>

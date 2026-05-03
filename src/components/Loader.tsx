@@ -2,7 +2,7 @@ import React from 'react';
 
 class Loader extends React.Component {
   render(): React.ReactNode {
-    return <p>Loading...</p>;
+    return <p className="loader">Loading...</p>;
   }
 }
 

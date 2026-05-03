@@ -16,6 +16,7 @@ interface State {
   loading: boolean;
   error: string | null;
   hasCrash: boolean;
+  totalPages: number;
 }
 
 class App extends React.Component<object, State> {
@@ -27,6 +28,7 @@ class App extends React.Component<object, State> {
     loading: false,
     error: null,
     hasCrash: false,
+    totalPages: 1,
   };
 
   componentDidMount(): void {
@@ -77,6 +79,7 @@ class App extends React.Component<object, State> {
 
       this.setState({
         characters: data.results,
+        totalPages: data.info.pages,
         loading: false,
       });
     } catch {
@@ -121,6 +124,8 @@ class App extends React.Component<object, State> {
       throw new Error('Test error for ErrorBoundary');
     }
 
+    const hasCharacters = this.state.characters.length > 0;
+
     return (
       <main>
         <h1>Rick and Morty Characters</h1>
@@ -137,11 +142,11 @@ class App extends React.Component<object, State> {
 
         {this.state.error && <ErrorMessage message={this.state.error} />}
 
-        {!this.state.loading && !this.state.error && (
+        {!this.state.loading && !this.state.error && hasCharacters && (
           <>
             <CardList characters={this.state.characters} />
 
-            <div>
+            <div className="pagination">
               <button
                 onClick={this.handlePrevPage}
                 disabled={this.state.page === 1}
@@ -149,11 +154,22 @@ class App extends React.Component<object, State> {
                 Prev
               </button>
 
-              <span> Page {this.state.page} </span>
+              <span>
+                Page {this.state.page} of {this.state.totalPages}
+              </span>
 
-              <button onClick={this.handleNextPage}>Next</button>
+              <button
+                onClick={this.handleNextPage}
+                disabled={this.state.page >= this.state.totalPages}
+              >
+                Next
+              </button>
             </div>
           </>
+        )}
+
+        {!this.state.loading && !this.state.error && !hasCharacters && (
+          <p className="empty-message">No results</p>
         )}
       </main>
     );
