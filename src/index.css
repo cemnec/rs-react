@@ -46,6 +46,18 @@ button:disabled {
   opacity: 0.5;
 }
 
+.search-section,
+.results-section {
+  padding: 20px;
+  margin-bottom: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.results-section {
+  min-height: 300px;
+}
+
 .card-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

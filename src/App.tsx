@@ -52,7 +52,10 @@ class App extends React.Component<object, State> {
   handleSearchSubmit = (): void => {
     const trimmed = this.state.searchTerm.trim();
 
-    if (trimmed === this.state.appliedSearchTerm) return;
+    if (trimmed === this.state.appliedSearchTerm) {
+      this.setState({ searchTerm: trimmed });
+      return;
+    }
 
     localStorage.setItem(SEARCH_TERM_STORAGE_KEY, trimmed);
 
@@ -130,47 +133,51 @@ class App extends React.Component<object, State> {
       <main>
         <h1>Rick and Morty Characters</h1>
 
-        <Search
-          searchTerm={this.state.searchTerm}
-          onSearchChange={this.handleSearchChange}
-          onSearchSubmit={this.handleSearchSubmit}
-        />
+        <section className="search-section">
+          <Search
+            searchTerm={this.state.searchTerm}
+            onSearchChange={this.handleSearchChange}
+            onSearchSubmit={this.handleSearchSubmit}
+          />
+        </section>
 
-        <button onClick={this.triggerError}>Throw Error</button>
+        <section className="results-section">
+          <button onClick={this.triggerError}>Throw Error</button>
 
-        {this.state.loading && <Loader />}
+          {this.state.loading && <Loader />}
 
-        {this.state.error && <ErrorMessage message={this.state.error} />}
+          {this.state.error && <ErrorMessage message={this.state.error} />}
 
-        {!this.state.loading && !this.state.error && hasCharacters && (
-          <>
-            <CardList characters={this.state.characters} />
+          {!this.state.loading && !this.state.error && hasCharacters && (
+            <>
+              <CardList characters={this.state.characters} />
 
-            <div className="pagination">
-              <button
-                onClick={this.handlePrevPage}
-                disabled={this.state.page === 1}
-              >
-                Prev
-              </button>
+              <div className="pagination">
+                <button
+                  onClick={this.handlePrevPage}
+                  disabled={this.state.page === 1}
+                >
+                  Prev
+                </button>
 
-              <span>
-                Page {this.state.page} of {this.state.totalPages}
-              </span>
+                <span>
+                  Page {this.state.page} of {this.state.totalPages}
+                </span>
 
-              <button
-                onClick={this.handleNextPage}
-                disabled={this.state.page >= this.state.totalPages}
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
+                <button
+                  onClick={this.handleNextPage}
+                  disabled={this.state.page >= this.state.totalPages}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
 
-        {!this.state.loading && !this.state.error && !hasCharacters && (
-          <p className="empty-message">No results</p>
-        )}
+          {!this.state.loading && !this.state.error && !hasCharacters && (
+            <p className="empty-message">No results</p>
+          )}
+        </section>
       </main>
     );
   }
