@@ -86,6 +86,30 @@ class App extends React.Component<object, State> {
     }
   };
 
+  handleNextPage = (): void => {
+    this.setState(
+      (prevState) => ({
+        page: prevState.page + 1,
+      }),
+      () => {
+        void this.loadCharacters();
+      },
+    );
+  };
+
+  handlePrevPage = (): void => {
+    if (this.state.page === 1) return;
+
+    this.setState(
+      (prevState) => ({
+        page: prevState.page - 1,
+      }),
+      () => {
+        void this.loadCharacters();
+      },
+    );
+  };
+
   render(): React.ReactNode {
     return (
       <main>
@@ -103,6 +127,25 @@ class App extends React.Component<object, State> {
 
         {!this.state.loading && !this.state.error && (
           <CardList characters={this.state.characters} />
+        )}
+
+        {!this.state.loading && !this.state.error && (
+          <>
+            <CardList characters={this.state.characters} />
+
+            <div>
+              <button
+                onClick={this.handlePrevPage}
+                disabled={this.state.page === 1}
+              >
+                Prev
+              </button>
+
+              <span> Page {this.state.page} </span>
+
+              <button onClick={this.handleNextPage}>Next</button>
+            </div>
+          </>
         )}
       </main>
     );
