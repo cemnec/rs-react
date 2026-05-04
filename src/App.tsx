@@ -142,16 +142,20 @@ class App extends React.Component<object, State> {
         </section>
 
         <section className="results-section">
-          <button onClick={this.triggerError}>Throw Error</button>
-
           {this.state.loading && <Loader />}
 
           {this.state.error && <ErrorMessage message={this.state.error} />}
 
           {!this.state.loading && !this.state.error && hasCharacters && (
-            <>
-              <CardList characters={this.state.characters} />
+            <CardList characters={this.state.characters} />
+          )}
 
+          {!this.state.loading && !this.state.error && !hasCharacters && (
+            <p className="empty-message">No results</p>
+          )}
+
+          <div className="bottom-controls">
+            {!this.state.loading && !this.state.error && hasCharacters && (
               <div className="pagination">
                 <button
                   onClick={this.handlePrevPage}
@@ -171,12 +175,10 @@ class App extends React.Component<object, State> {
                   Next
                 </button>
               </div>
-            </>
-          )}
+            )}
 
-          {!this.state.loading && !this.state.error && !hasCharacters && (
-            <p className="empty-message">No results</p>
-          )}
+            <button onClick={this.triggerError}>Throw Error</button>
+          </div>
         </section>
       </main>
     );
