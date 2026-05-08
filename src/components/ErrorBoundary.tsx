@@ -1,11 +1,11 @@
 import React from 'react';
 
 interface Props {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
-    hasError: boolean;
+  hasError: boolean;
 }
 
 class ErrorBoundary extends React.Component<Props, State> {
@@ -28,6 +28,9 @@ class ErrorBoundary extends React.Component<Props, State> {
           <section className="error-boundary">
             <h1>Something went wrong.</h1>
             <p>Please reload the page and try again.</p>
+            <button onClick={() => window.location.reload()}>
+              Reload page
+            </button>
           </section>
         </main>
       );
