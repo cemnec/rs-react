@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -35,5 +36,51 @@ describe('ErrorBoundary', () => {
     );
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/please reload the page and try again/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /reload page/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('logs caught errors to the console', () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => undefined);
+
+    render(
+      <ErrorBoundary>
+        <BrokenComponent />
+      </ErrorBoundary>,
+    );
+
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+
+  it('reloads the page when reload button is clicked', async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const reloadMock = vi.fn();
+
+    Object.defineProperty(window, 'location', {
+      value: {
+        ...window.location,
+        reload: reloadMock,
+      },
+      writable: true,
+    });
+
+    render(
+      <ErrorBoundary>
+        <BrokenComponent />
+      </ErrorBoundary>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /reload page/i }));
+
+    expect(reloadMock).toHaveBeenCalledTimes(1);
   });
 });
