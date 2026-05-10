@@ -1,7 +1,7 @@
 import React from 'react';
 
-import type { Character } from '../types/character';
-import Card from './Card';
+import type { Character } from '../../types/character';
+import Card from '../Card';
 
 interface Props {
   characters: Character[];
