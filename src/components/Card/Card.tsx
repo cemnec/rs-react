@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Character } from '../types/character';
+import type { Character } from '../../types/character';
 
 interface Props {
   character: Character;
