@@ -6,49 +6,15 @@ import { fetchCharacters } from './api/charactersApi';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 import { SEARCH_TERM_STORAGE_KEY } from './constants/storage';
-import type { Character, CharactersResponse } from './types/character';
+import {
+  mockCharactersResponse,
+  mockMorty,
+  mockSinglePageResponse,
+} from './test-utils/mockCharacters.ts';
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),
 }));
-
-const mockRick: Character = {
-  id: 1,
-  name: 'Rick Sanchez',
-  status: 'Alive',
-  species: 'Human',
-  gender: 'Male',
-  image: 'https://example.com/rick.png',
-};
-
-const mockMorty: Character = {
-  id: 2,
-  name: 'Morty Smith',
-  status: 'Alive',
-  species: 'Human',
-  gender: 'Male',
-  image: 'https://example.com/morty.png',
-};
-
-const mockResponse: CharactersResponse = {
-  info: {
-    count: 2,
-    pages: 2,
-    next: 'https://rickandmortyapi.com/api/character?page=2',
-    prev: null,
-  },
-  results: [mockRick, mockMorty],
-};
-
-const mockSinglePageResponse: CharactersResponse = {
-  info: {
-    count: 1,
-    pages: 1,
-    next: null,
-    prev: null,
-  },
-  results: [mockRick],
-};
 
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
 
@@ -56,7 +22,7 @@ describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
     mockedFetchCharacters.mockReset();
-    mockedFetchCharacters.mockResolvedValue(mockResponse);
+    mockedFetchCharacters.mockResolvedValue(mockCharactersResponse);
   });
 
   it('loads and displays characters on initial render', async () => {
@@ -86,7 +52,7 @@ describe('App', () => {
     const user = userEvent.setup();
 
     mockedFetchCharacters
-      .mockResolvedValueOnce(mockResponse)
+      .mockResolvedValueOnce(mockCharactersResponse)
       .mockResolvedValueOnce(mockSinglePageResponse);
 
     render(<App />);
@@ -140,7 +106,7 @@ describe('App', () => {
     const user = userEvent.setup();
 
     mockedFetchCharacters
-      .mockResolvedValueOnce(mockResponse)
+      .mockResolvedValueOnce(mockCharactersResponse)
       .mockResolvedValueOnce({
         info: {
           count: 1,
@@ -150,7 +116,7 @@ describe('App', () => {
         },
         results: [mockMorty],
       })
-      .mockResolvedValueOnce(mockResponse);
+      .mockResolvedValueOnce(mockCharactersResponse);
 
     render(<App />);
 
