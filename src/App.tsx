@@ -44,8 +44,10 @@ function App(): ReactElement {
     }
   }, [page, pageParam, setSearchParams]);
 
+  const hasPageParam: boolean = pageParam === String(page);
+
   useEffect(() => {
-    if (!searchParams.has('page')) return;
+    if (!hasPageParam) return;
 
     let isMounted: boolean = true;
 
@@ -80,7 +82,7 @@ function App(): ReactElement {
     return () => {
       isMounted = false;
     };
-  }, [appliedSearchTerm, page, searchParams]);
+  }, [appliedSearchTerm, page, hasPageParam]);
 
   const handleSearchSubmit = (): void => {
     const trimmed = searchTerm.trim();
