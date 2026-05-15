@@ -1,13 +1,11 @@
-import React from 'react';
+import type { ReactElement } from 'react';
 
 interface Props {
   message: string;
 }
 
-class ErrorMessage extends React.Component<Props> {
-  render(): React.ReactNode {
-    return <p className="error-message">{this.props.message}</p>;
-  }
+function ErrorMessage({ message }: Props): ReactElement {
+  return <p className="error-message">{message}</p>;
 }
 
 export default ErrorMessage;
