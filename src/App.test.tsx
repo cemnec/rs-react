@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacters } from './api/charactersApi';
@@ -18,6 +19,26 @@ vi.mock('./api/charactersApi', () => ({
 
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
 
+const renderApp = (initialEntries: string[] = ['/?page=1']) => {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <App />
+    </MemoryRouter>,
+  );
+};
+
+const renderAppWithErrorBoundary = (
+  initialEntries: string[] = ['/?page=1'],
+) => {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </MemoryRouter>,
+  );
+};
+
 describe('App', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -26,7 +47,7 @@ describe('App', () => {
   });
 
   it('loads and displays characters on initial render', async () => {
-    render(<App />);
+    renderApp();
 
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
 
@@ -39,7 +60,7 @@ describe('App', () => {
   it('restores search term from localStorage on app start', async () => {
     localStorage.setItem(SEARCH_TERM_STORAGE_KEY, 'morty');
 
-    render(<App />);
+    renderApp();
 
     expect(await screen.findByDisplayValue('morty')).toBeInTheDocument();
 
@@ -55,7 +76,7 @@ describe('App', () => {
       .mockResolvedValueOnce(mockCharactersResponse)
       .mockResolvedValueOnce(mockSinglePageResponse);
 
-    render(<App />);
+    renderApp();
 
     await screen.findByText('Rick Sanchez');
 
@@ -80,7 +101,7 @@ describe('App', () => {
 
     localStorage.setItem(SEARCH_TERM_STORAGE_KEY, 'rick');
 
-    render(<App />);
+    renderApp();
 
     await screen.findByDisplayValue('rick');
     await screen.findByText('Rick Sanchez');
@@ -95,7 +116,7 @@ describe('App', () => {
   it('shows an error message when API request fails', async () => {
     mockedFetchCharacters.mockRejectedValueOnce(new Error('API error'));
 
-    render(<App />);
+    renderApp();
 
     expect(
       await screen.findByText(/characters not found/i),
@@ -118,7 +139,7 @@ describe('App', () => {
       })
       .mockResolvedValueOnce(mockCharactersResponse);
 
-    render(<App />);
+    renderApp();
 
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
 
@@ -149,16 +170,28 @@ describe('App', () => {
 
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
 
-    render(
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>,
-    );
+    renderAppWithErrorBoundary();
 
     await screen.findByText('Rick Sanchez');
 
     await user.click(screen.getByRole('button', { name: /throw error/i }));
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+  });
+
+  it('sets default page query parameter when it is missing from URL', async () => {
+    renderApp(['/']);
+
+    await waitFor(() => {
+      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
+    });
+  });
+
+  it('loads page from URL search params', async () => {
+    renderApp(['/?page=2']);
+
+    await waitFor(() => {
+      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
+    });
   });
 });

@@ -1,4 +1,5 @@
-import React from 'react';
+import { type ReactElement, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { fetchCharacters } from './api/charactersApi';
 import CardList from './components/CardList';
@@ -6,183 +7,174 @@ import ErrorMessage from './components/ErrorMessage';
 import Loader from './components/Loader';
 import Search from './components/Search';
 import { SEARCH_TERM_STORAGE_KEY } from './constants/storage';
-import type { Character } from './types/character';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import type { Character, CharactersResponse } from './types/character';
 
-interface State {
-  searchTerm: string;
-  appliedSearchTerm: string;
-  characters: Character[];
-  page: number;
-  loading: boolean;
-  error: string | null;
-  hasCrash: boolean;
-  totalPages: number;
-}
+function App(): ReactElement {
+  const [searchParams, setSearchParams] = useSearchParams();
 
-class App extends React.Component<object, State> {
-  state: State = {
-    searchTerm: '',
-    appliedSearchTerm: '',
-    characters: [],
-    page: 1,
-    loading: false,
-    error: null,
-    hasCrash: false,
-    totalPages: 1,
-  };
+  const pageParam: string | null = searchParams.get('page');
+  const parsedPage: number = Number(pageParam);
 
-  componentDidMount(): void {
-    const saved = localStorage.getItem(SEARCH_TERM_STORAGE_KEY) ?? '';
+  const page: number =
+    !pageParam || Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
-    this.setState(
-      {
-        searchTerm: saved,
-        appliedSearchTerm: saved,
-      },
-      () => {
-        void this.loadCharacters();
-      },
-    );
-  }
+  const [searchTerm, setSearchTerm] = useLocalStorage(
+    SEARCH_TERM_STORAGE_KEY,
+    '',
+  );
 
-  handleSearchChange = (value: string): void => {
-    this.setState({ searchTerm: value });
-  };
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState(searchTerm);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [hasCrash, setHasCrash] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
 
-  handleSearchSubmit = (): void => {
-    const trimmed = this.state.searchTerm.trim();
+  useEffect(() => {
+    if (pageParam !== String(page)) {
+      setSearchParams(
+        (prevParams: URLSearchParams): URLSearchParams => {
+          const nextParams = new URLSearchParams(prevParams);
+          nextParams.set('page', String(page));
+          return nextParams;
+        },
+        { replace: true },
+      );
+    }
+  }, [page, pageParam, setSearchParams]);
 
-    if (trimmed === this.state.appliedSearchTerm) {
-      this.setState({ searchTerm: trimmed });
+  useEffect(() => {
+    if (!searchParams.has('page')) return;
+
+    let isMounted: boolean = true;
+
+    const loadCharacters = async (): Promise<void> => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const data: CharactersResponse = await fetchCharacters(
+          appliedSearchTerm,
+          page,
+        );
+
+        if (!isMounted) return;
+
+        setCharacters(data.results);
+        setTotalPages(data.info.pages);
+      } catch {
+        if (!isMounted) return;
+
+        setCharacters([]);
+        setError('Characters not found. Try another search term.');
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadCharacters();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [appliedSearchTerm, page, searchParams]);
+
+  const handleSearchSubmit = (): void => {
+    const trimmed = searchTerm.trim();
+
+    if (trimmed === appliedSearchTerm) {
+      setSearchTerm(trimmed);
       return;
     }
 
-    localStorage.setItem(SEARCH_TERM_STORAGE_KEY, trimmed);
+    setSearchTerm(trimmed);
+    setAppliedSearchTerm(trimmed);
 
-    this.setState(
-      {
-        appliedSearchTerm: trimmed,
-        searchTerm: trimmed,
-        page: 1,
-      },
-      () => {
-        void this.loadCharacters();
-      },
-    );
+    setSearchParams((prevParams: URLSearchParams): URLSearchParams => {
+      const nextParams = new URLSearchParams(prevParams);
+      nextParams.set('page', '1');
+      return nextParams;
+    });
   };
 
-  loadCharacters = async (): Promise<void> => {
-    this.setState({ loading: true, error: null });
-
-    try {
-      const data = await fetchCharacters(
-        this.state.appliedSearchTerm,
-        this.state.page,
-      );
-
-      this.setState({
-        characters: data.results,
-        totalPages: data.info.pages,
-        loading: false,
-      });
-    } catch {
-      this.setState({
-        characters: [],
-        loading: false,
-        error: 'Characters not found. Try another search term.',
-      });
-    }
+  const handleNextPage = (): void => {
+    setSearchParams((prevParams: URLSearchParams): URLSearchParams => {
+      const nextParams = new URLSearchParams(prevParams);
+      nextParams.set('page', String(page + 1));
+      return nextParams;
+    });
   };
 
-  handleNextPage = (): void => {
-    this.setState(
-      (prevState) => ({
-        page: prevState.page + 1,
-      }),
-      () => {
-        void this.loadCharacters();
-      },
-    );
+  const handlePrevPage = (): void => {
+    if (page === 1) return;
+
+    setSearchParams((prevParams: URLSearchParams): URLSearchParams => {
+      const nextParams = new URLSearchParams(prevParams);
+      nextParams.set('page', String(page - 1));
+      return nextParams;
+    });
   };
 
-  handlePrevPage = (): void => {
-    if (this.state.page === 1) return;
-
-    this.setState(
-      (prevState) => ({
-        page: prevState.page - 1,
-      }),
-      () => {
-        void this.loadCharacters();
-      },
-    );
+  const triggerError = (): void => {
+    setHasCrash(true);
   };
 
-  triggerError = (): void => {
-    this.setState({ hasCrash: true });
-  };
-
-  render(): React.ReactNode {
-    if (this.state.hasCrash) {
-      throw new Error('Test error for ErrorBoundary');
-    }
-
-    const hasCharacters = this.state.characters.length > 0;
-
-    return (
-      <main>
-        <h1>Rick and Morty Characters</h1>
-
-        <section className="search-section">
-          <Search
-            searchTerm={this.state.searchTerm}
-            onSearchChange={this.handleSearchChange}
-            onSearchSubmit={this.handleSearchSubmit}
-          />
-        </section>
-
-        <section className="results-section">
-          {this.state.loading && <Loader />}
-
-          {this.state.error && <ErrorMessage message={this.state.error} />}
-
-          {!this.state.loading && !this.state.error && hasCharacters && (
-            <CardList characters={this.state.characters} />
-          )}
-
-          {!this.state.loading && !this.state.error && !hasCharacters && (
-            <p className="empty-message">No results</p>
-          )}
-
-          <div className="bottom-controls">
-            {!this.state.loading && !this.state.error && hasCharacters && (
-              <div className="pagination">
-                <button
-                  onClick={this.handlePrevPage}
-                  disabled={this.state.page === 1}
-                >
-                  Prev
-                </button>
-
-                <span>
-                  Page {this.state.page} of {this.state.totalPages}
-                </span>
-
-                <button
-                  onClick={this.handleNextPage}
-                  disabled={this.state.page >= this.state.totalPages}
-                >
-                  Next
-                </button>
-              </div>
-            )}
-
-            <button onClick={this.triggerError}>Throw Error</button>
-          </div>
-        </section>
-      </main>
-    );
+  if (hasCrash) {
+    throw new Error('Test error for ErrorBoundary');
   }
+
+  const hasCharacters: boolean = characters.length > 0;
+
+  return (
+    <main>
+      <h1>Rick and Morty Characters</h1>
+
+      <section className="search-section">
+        <Search
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onSearchSubmit={handleSearchSubmit}
+        />
+      </section>
+
+      <section className="results-section">
+        {loading && <Loader />}
+
+        {error && <ErrorMessage message={error} />}
+
+        {!loading && !error && hasCharacters && (
+          <CardList characters={characters} />
+        )}
+
+        {!loading && !error && !hasCharacters && (
+          <p className="empty-message">No results</p>
+        )}
+
+        <div className="bottom-controls">
+          {!loading && !error && hasCharacters && (
+            <div className="pagination">
+              <button onClick={handlePrevPage} disabled={page === 1}>
+                Prev
+              </button>
+
+              <span>
+                Page {page} of {totalPages}
+              </span>
+
+              <button onClick={handleNextPage} disabled={page >= totalPages}>
+                Next
+              </button>
+            </div>
+          )}
+
+          <button onClick={triggerError}>Throw Error</button>
+        </div>
+      </section>
+    </main>
+  );
 }
 
 export default App;
