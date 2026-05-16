@@ -19,7 +19,7 @@ function Card({ character }: Props): ReactElement {
         }}
         className="card-link"
       >
-        <img src={character.image} alt={character.name} width="120" />
+        <img src={character.image} alt={character.name} />
         <h2>{character.name}</h2>
         <p>{character.species}</p>
         <p>{character.status}</p>
