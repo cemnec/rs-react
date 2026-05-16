@@ -64,4 +64,16 @@ describe('CharacterDetailsPage', () => {
 
     expect(mockedFetchCharacterById).toHaveBeenCalledWith('999');
   });
+
+  it('does not fetch character details when id is missing', () => {
+    render(
+      <MemoryRouter initialEntries={['/characters']}>
+        <Routes>
+          <Route path="/characters" element={<CharacterDetailsPage />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(mockedFetchCharacterById).not.toHaveBeenCalled();
+  });
 });

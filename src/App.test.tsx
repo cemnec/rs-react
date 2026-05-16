@@ -1,197 +1,71 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchCharacters } from './api/charactersApi';
+import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
 import App from './App';
-import ErrorBoundary from './components/ErrorBoundary';
-import { SEARCH_TERM_STORAGE_KEY } from './constants/storage';
-import {
-  mockCharactersResponse,
-  mockMorty,
-  mockSinglePageResponse,
-} from './test-utils/mockCharacters.ts';
+import { mockCharactersResponse, mockRick } from './test-utils/mockCharacters';
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),
+  fetchCharacterById: vi.fn(),
 }));
 
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
+const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
 
-const renderApp = (initialEntries: string[] = ['/?page=1']) => {
+const renderApp = (initialEntry = '/?page=1') => {
   return render(
-    <MemoryRouter initialEntries={initialEntries}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <App />
     </MemoryRouter>,
   );
 };
 
-const renderAppWithErrorBoundary = (
-  initialEntries: string[] = ['/?page=1'],
-) => {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </MemoryRouter>,
-  );
-};
-
-describe('App', () => {
+describe('App routes', () => {
   beforeEach(() => {
-    localStorage.clear();
     mockedFetchCharacters.mockReset();
+    mockedFetchCharacterById.mockReset();
+
     mockedFetchCharacters.mockResolvedValue(mockCharactersResponse);
+    mockedFetchCharacterById.mockResolvedValue(mockRick);
   });
 
-  it('loads and displays characters on initial render', async () => {
-    renderApp();
-
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-
-    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
-    expect(screen.getByText('Morty Smith')).toBeInTheDocument();
-
-    expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
-  });
-
-  it('restores search term from localStorage on app start', async () => {
-    localStorage.setItem(SEARCH_TERM_STORAGE_KEY, 'morty');
-
-    renderApp();
-
-    expect(await screen.findByDisplayValue('morty')).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('morty', 1);
-    });
-  });
-
-  it('submits trimmed search term and saves it to localStorage', async () => {
-    const user = userEvent.setup();
-
-    mockedFetchCharacters
-      .mockResolvedValueOnce(mockCharactersResponse)
-      .mockResolvedValueOnce(mockSinglePageResponse);
-
-    renderApp();
-
-    await screen.findByText('Rick Sanchez');
-
-    mockedFetchCharacters.mockClear();
-
-    const input = screen.getByPlaceholderText(/search characters/i);
-
-    await user.clear(input);
-    await user.type(input, '  rick  ');
-    await user.click(screen.getByRole('button', { name: /search/i }));
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('rick', 1);
-    });
-
-    expect(localStorage.getItem(SEARCH_TERM_STORAGE_KEY)).toBe('rick');
-    expect(input).toHaveValue('rick');
-  });
-
-  it('does not make a new request when submitted search term has not changed', async () => {
-    const user = userEvent.setup();
-
-    localStorage.setItem(SEARCH_TERM_STORAGE_KEY, 'rick');
-
-    renderApp();
-
-    await screen.findByDisplayValue('rick');
-    await screen.findByText('Rick Sanchez');
-
-    mockedFetchCharacters.mockClear();
-
-    await user.click(screen.getByRole('button', { name: /search/i }));
-
-    expect(mockedFetchCharacters).not.toHaveBeenCalled();
-  });
-
-  it('shows an error message when API request fails', async () => {
-    mockedFetchCharacters.mockRejectedValueOnce(new Error('API error'));
-
-    renderApp();
+  it('renders main page on root route', async () => {
+    renderApp('/?page=1');
 
     expect(
-      await screen.findByText(/characters not found/i),
+      screen.getByRole('heading', { name: /rick and morty characters/i }),
+    ).toBeInTheDocument();
+
+    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
+  });
+
+  it('renders about page on /about route', () => {
+    renderApp('/about');
+
+    expect(
+      screen.getByRole('heading', { name: /about this app/i }),
     ).toBeInTheDocument();
   });
 
-  it('handles pagination with next and previous buttons', async () => {
-    const user = userEvent.setup();
+  it('renders not found page on unknown route', () => {
+    renderApp('/some-wrong-page');
 
-    mockedFetchCharacters
-      .mockResolvedValueOnce(mockCharactersResponse)
-      .mockResolvedValueOnce({
-        info: {
-          count: 1,
-          pages: 2,
-          next: null,
-          prev: 'https://rickandmortyapi.com/api/character?page=1',
-        },
-        results: [mockMorty],
-      })
-      .mockResolvedValueOnce(mockCharactersResponse);
+    expect(
+      screen.getByRole('heading', { name: /page not found/i }),
+    ).toBeInTheDocument();
+  });
 
-    renderApp();
+  it('renders character details route inside main page', async () => {
+    renderApp('/characters/1?page=1');
 
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
 
-    mockedFetchCharacters.mockClear();
+    expect(
+      screen.getByRole('heading', { name: /character details/i }),
+    ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /next/i }));
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
-    });
-
-    expect(await screen.findByText('Morty Smith')).toBeInTheDocument();
-    expect(screen.getByText(/page 2 of 2/i)).toBeInTheDocument();
-
-    mockedFetchCharacters.mockClear();
-
-    await user.click(screen.getByRole('button', { name: /prev/i }));
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
-    });
-
-    expect(screen.getByText(/page 1 of 2/i)).toBeInTheDocument();
-  });
-
-  it('renders ErrorBoundary fallback when Throw Error button is clicked', async () => {
-    const user = userEvent.setup();
-
-    vi.spyOn(console, 'error').mockImplementation(() => undefined);
-
-    renderAppWithErrorBoundary();
-
-    await screen.findByText('Rick Sanchez');
-
-    await user.click(screen.getByRole('button', { name: /throw error/i }));
-
-    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
-  });
-
-  it('sets default page query parameter when it is missing from URL', async () => {
-    renderApp(['/']);
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
-    });
-  });
-
-  it('loads page from URL search params', async () => {
-    renderApp(['/?page=2']);
-
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
-    });
+    expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
   });
 });

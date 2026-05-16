@@ -120,6 +120,18 @@ function MainPage(): ReactElement {
     });
   };
 
+  const handleSearchChange = (value: string): void => {
+    setSearchTerm(value);
+
+    if (page !== 1) {
+      setSearchParams((prevParams: URLSearchParams): URLSearchParams => {
+        const nextParams = new URLSearchParams(prevParams);
+        nextParams.set('page', '1');
+        return nextParams;
+      });
+    }
+  };
+
   const triggerError = (): void => {
     setHasCrash(true);
   };
@@ -139,7 +151,7 @@ function MainPage(): ReactElement {
       <section className="search-section">
         <Search
           searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
+          onSearchChange={handleSearchChange}
           onSearchSubmit={handleSearchSubmit}
         />
       </section>

@@ -59,9 +59,7 @@ function CharacterDetailsPage(): ReactElement {
           search: backSearch,
         }}
         aria-label="Close character details"
-      >
-        ×
-      </Link>
+      ></Link>
 
       <h2>Character details</h2>
 
