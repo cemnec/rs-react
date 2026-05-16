@@ -1,5 +1,5 @@
 import { type ReactElement, useEffect, useState } from 'react';
-import { Outlet, useSearchParams } from 'react-router';
+import { Outlet, useMatch, useSearchParams } from 'react-router';
 
 import { fetchCharacters } from '../../api/charactersApi';
 import CardList from '../../components/CardList';
@@ -129,6 +129,8 @@ function MainPage(): ReactElement {
   }
 
   const hasCharacters: boolean = characters.length > 0;
+  const detailsMatch = useMatch('/characters/:id');
+  const hasDetails = Boolean(detailsMatch);
 
   return (
     <main>
@@ -148,7 +150,19 @@ function MainPage(): ReactElement {
         {error && <ErrorMessage message={error} />}
 
         {!loading && !error && hasCharacters && (
-          <CardList characters={characters} />
+          <div
+            className={
+              hasDetails ? 'content-layout with-details' : 'content-layout'
+            }
+          >
+            <CardList characters={characters} />
+
+            {hasDetails && (
+              <section className="details-section">
+                <Outlet />
+              </section>
+            )}
+          </div>
         )}
 
         {!loading && !error && !hasCharacters && (
@@ -175,8 +189,6 @@ function MainPage(): ReactElement {
           <button onClick={triggerError}>Throw Error</button>
         </div>
       </section>
-
-      <Outlet />
     </main>
   );
 }
