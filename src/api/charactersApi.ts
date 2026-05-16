@@ -19,7 +19,7 @@ export const fetchCharacters = async (
     throw new Error('Characters not found');
   }
 
-  return (await response.json()) as Promise<CharactersResponse>;
+  return (await response.json()) as CharactersResponse;
 };
 
 export const fetchCharacterById = async (id: string): Promise<Character> => {
@@ -29,5 +29,5 @@ export const fetchCharacterById = async (id: string): Promise<Character> => {
     throw new Error('Character details not found');
   }
 
-  return response.json();
+  return (await response.json()) as Character;
 };
