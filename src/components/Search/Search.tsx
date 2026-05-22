@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ChangeEvent, FormEvent, ReactElement } from 'react';
 
 interface Props {
   searchTerm: string;
@@ -6,30 +6,32 @@ interface Props {
   onSearchSubmit: () => void;
 }
 
-class Search extends React.Component<Props> {
-  handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    this.props.onSearchChange(event.target.value);
+function Search({
+  searchTerm,
+  onSearchChange,
+  onSearchSubmit,
+}: Props): ReactElement {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    onSearchChange(event.target.value);
   };
 
-  handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    this.props.onSearchSubmit();
+    onSearchSubmit();
   };
 
-  render(): React.ReactNode {
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <input
-          type="text"
-          value={this.props.searchTerm}
-          onChange={this.handleChange}
-          placeholder="Search characters"
-        />
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleChange}
+        placeholder="Search characters"
+      />
 
-        <button type="submit">Search</button>
-      </form>
-    );
-  }
+      <button type="submit">Search</button>
+    </form>
+  );
 }
 
 export default Search;

@@ -1,6 +1,5 @@
-import type { CharactersResponse } from '../types/character';
-
-const API_URL = 'https://rickandmortyapi.com/api/character';
+import { CHARACTERS_API_URL } from '../constants/api';
+import type { Character, CharactersResponse } from '../types/character';
 
 export const fetchCharacters = async (
   searchTerm: string,
@@ -14,11 +13,21 @@ export const fetchCharacters = async (
 
   params.set('page', String(page));
 
-  const response = await fetch(`${API_URL}?${params.toString()}`);
+  const response = await fetch(`${CHARACTERS_API_URL}?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error('Characters not found');
   }
 
-  return (await response.json()) as Promise<CharactersResponse>;
+  return (await response.json()) as CharactersResponse;
+};
+
+export const fetchCharacterById = async (id: string): Promise<Character> => {
+  const response = await fetch(`${CHARACTERS_API_URL}/${id}`);
+
+  if (!response.ok) {
+    throw new Error('Character details not found');
+  }
+
+  return (await response.json()) as Character;
 };

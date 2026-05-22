@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import type { Character } from '../../types/character';
@@ -25,14 +26,22 @@ const characters: Character[] = [
 
 describe('CardList', () => {
   it('renders all provided characters', () => {
-    render(<CardList characters={characters} />);
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <CardList characters={characters} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Rick Sanchez')).toBeInTheDocument();
     expect(screen.getByText('Morty Smith')).toBeInTheDocument();
   });
 
   it('renders one image for each character', () => {
-    render(<CardList characters={characters} />);
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <CardList characters={characters} />
+      </MemoryRouter>,
+    );
 
     expect(screen.getAllByRole('img')).toHaveLength(characters.length);
   });

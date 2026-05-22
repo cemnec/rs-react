@@ -1,4 +1,5 @@
-import React from 'react';
+import type { ReactElement } from 'react';
+import { Link, useSearchParams } from 'react-router';
 
 import type { Character } from '../../types/character';
 
@@ -6,19 +7,25 @@ interface Props {
   character: Character;
 }
 
-class Card extends React.Component<Props> {
-  render(): React.ReactNode {
-    const { character } = this.props;
+function Card({ character }: Props): ReactElement {
+  const [searchParams] = useSearchParams();
 
-    return (
-      <article className="card">
-        <img src={character.image} alt={character.name} width="120" />
+  return (
+    <article className="card">
+      <Link
+        to={{
+          pathname: `/characters/${character.id}`,
+          search: searchParams.toString(),
+        }}
+        className="card-link"
+      >
+        <img src={character.image} alt={character.name} />
         <h2>{character.name}</h2>
         <p>{character.species}</p>
         <p>{character.status}</p>
-      </article>
-    );
-  }
+      </Link>
+    </article>
+  );
 }
 
 export default Card;

@@ -1,9 +1,7 @@
-import React from 'react';
+import type { ReactElement } from 'react';
 
-class Loader extends React.Component {
-  render(): React.ReactNode {
-    return <p className="loader">Loading...</p>;
-  }
+function Loader(): ReactElement {
+  return <p className="loader">Loading...</p>;
 }
 
 export default Loader;

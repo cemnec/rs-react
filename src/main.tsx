@@ -1,15 +1,23 @@
 import './index.css';
 
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
 
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const routerBasename =
+  import.meta.env.BASE_URL === '/'
+    ? undefined
+    : import.meta.env.BASE_URL.replace(/\/$/, '');
+
+createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <BrowserRouter basename={routerBasename}>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </BrowserRouter>
   </React.StrictMode>,
 );

@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import type { Character } from '../../types/character';
@@ -15,7 +16,11 @@ const character: Character = {
 
 describe('Card', () => {
   it('renders character information', () => {
-    render(<Card character={character} />);
+    render(
+      <MemoryRouter initialEntries={['/?page=1']}>
+        <Card character={character} />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.getByRole('heading', { name: /rick sanchez/i }),

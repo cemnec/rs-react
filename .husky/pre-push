@@ -1,1 +1,3 @@
-pnpm test:run
+pnpm lint
+pnpm build
+pnpm test:coverage
