@@ -1,16 +1,12 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import NotFoundPage from './NotFoundPage';
 
 describe('NotFoundPage', () => {
   it('renders 404 page', () => {
-    render(
-      <MemoryRouter>
-        <NotFoundPage />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<NotFoundPage />);
 
     expect(screen.getByText('404')).toBeInTheDocument();
     expect(
@@ -22,11 +18,7 @@ describe('NotFoundPage', () => {
   });
 
   it('renders link back to home page', () => {
-    render(
-      <MemoryRouter>
-        <NotFoundPage />
-      </MemoryRouter>,
-    );
+    renderWithProviders(<NotFoundPage />);
 
     expect(
       screen.getByRole('link', { name: /back to home page/i }),

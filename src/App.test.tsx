@@ -1,10 +1,10 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
 import App from './App';
 import { mockCharactersResponse, mockRick } from './test-utils/mockCharacters';
+import { renderWithProviders } from './test-utils/renderWithProviders';
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),
@@ -15,11 +15,9 @@ const mockedFetchCharacters = vi.mocked(fetchCharacters);
 const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
 
 const renderApp = (initialEntry = '/?page=1') => {
-  return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <App />
-    </MemoryRouter>,
-  );
+  return renderWithProviders(<App />, {
+    route: initialEntry,
+  });
 };
 
 describe('App routes', () => {

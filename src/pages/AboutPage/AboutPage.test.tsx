@@ -1,11 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { renderWithProviders } from '../../test-utils/renderWithProviders.tsx';
 import AboutPage from './AboutPage';
 
 describe('AboutPage', () => {
   it('renders about page content', () => {
-    render(<AboutPage />);
+    renderWithProviders(<AboutPage />);
 
     expect(
       screen.getByRole('heading', { name: /about this app/i }),
@@ -22,7 +23,7 @@ describe('AboutPage', () => {
   });
 
   it('renders RS School React course link', () => {
-    render(<AboutPage />);
+    renderWithProviders(<AboutPage />);
 
     expect(
       screen.getByRole('link', { name: /open rs school react course/i }),

@@ -1,3 +1,4 @@
+import type { SelectedItem } from '../store/selectedItemsSlice.ts';
 import type { Character, CharactersResponse } from '../types/character';
 
 export const mockRick: Character = {
@@ -18,6 +19,8 @@ export const mockMorty: Character = {
   image: 'https://example.com/morty.png',
 };
 
+export const mockCharacters: Character[] = [mockRick, mockMorty];
+
 export const mockCharactersResponse: CharactersResponse = {
   info: {
     count: 2,
@@ -25,7 +28,7 @@ export const mockCharactersResponse: CharactersResponse = {
     next: 'https://rickandmortyapi.com/api/character?page=2',
     prev: null,
   },
-  results: [mockRick, mockMorty],
+  results: mockCharacters,
 };
 
 export const mockSinglePageResponse: CharactersResponse = {
@@ -37,3 +40,10 @@ export const mockSinglePageResponse: CharactersResponse = {
   },
   results: [mockRick],
 };
+
+const createMockSelectedItem = (character: Character): SelectedItem => ({
+  ...character,
+  detailsUrl: `/characters/${character.id}`,
+});
+
+export const mockSelectedRick: SelectedItem = createMockSelectedItem(mockRick);

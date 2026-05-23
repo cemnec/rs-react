@@ -1,9 +1,10 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { screen } from '@testing-library/react';
+import { Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacterById } from '../../api/charactersApi';
 import { mockRick } from '../../test-utils/mockCharacters';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import CharacterDetailsPage from './CharacterDetailsPage';
 
 vi.mock('../../api/charactersApi', () => ({
@@ -13,12 +14,13 @@ vi.mock('../../api/charactersApi', () => ({
 const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
 
 const renderCharacterDetailsPage = (initialEntry = '/characters/1?page=2') => {
-  return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/characters/:id" element={<CharacterDetailsPage />} />
-      </Routes>
-    </MemoryRouter>,
+  return renderWithProviders(
+    <Routes>
+      <Route path="/characters/:id" element={<CharacterDetailsPage />} />
+    </Routes>,
+    {
+      route: initialEntry,
+    },
   );
 };
 
@@ -66,12 +68,13 @@ describe('CharacterDetailsPage', () => {
   });
 
   it('does not fetch character details when id is missing', () => {
-    render(
-      <MemoryRouter initialEntries={['/characters']}>
-        <Routes>
-          <Route path="/characters" element={<CharacterDetailsPage />} />
-        </Routes>
-      </MemoryRouter>,
+    renderWithProviders(
+      <Routes>
+        <Route path="/characters" element={<CharacterDetailsPage />} />
+      </Routes>,
+      {
+        route: '/characters',
+      },
     );
 
     expect(mockedFetchCharacterById).not.toHaveBeenCalled();
