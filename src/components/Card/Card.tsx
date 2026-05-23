@@ -26,12 +26,7 @@ function Card({ character }: Props): ReactElement {
 
     dispatch(
       toggleSelectedItem({
-        id: character.id,
-        name: character.name,
-        status: character.status,
-        species: character.species,
-        gender: character.gender,
-        image: character.image,
+        ...character,
         detailsUrl: `/characters/${character.id}`,
       }),
     );
