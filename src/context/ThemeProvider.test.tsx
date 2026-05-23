@@ -19,7 +19,7 @@ function ThemeConsumer(): ReactElement {
   );
 }
 
-describe('ThemeContext', () => {
+describe('ThemeProvider', () => {
   it('provides light theme by default', () => {
     render(
       <ThemeProvider>
