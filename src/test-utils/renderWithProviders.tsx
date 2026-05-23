@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
 
+import { ThemeProvider } from '../context/ThemeProvider';
 import { type AppStore, createAppStore } from '../store/store';
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -25,7 +26,9 @@ export const renderWithProviders = (
   function Wrapper({ children }: WrapperProps): ReactElement {
     return (
       <Provider store={store}>
-        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        <ThemeProvider>
+          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        </ThemeProvider>
       </Provider>
     );
   }

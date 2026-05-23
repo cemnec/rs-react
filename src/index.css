@@ -2,6 +2,30 @@
   box-sizing: border-box;
 }
 
+:root {
+  --color-page-bg: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-text: #1f2933;
+  --color-muted: #4b5563;
+  --color-border: #e5e7eb;
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+  --color-panel-bg: #faf5ff;
+  --shadow-card: 0 20px 60px rgb(15 23 42 / 10%);
+}
+
+:root[data-theme='dark'] {
+  --color-page-bg: #111827;
+  --color-surface: #1f2937;
+  --color-text: #f9fafb;
+  --color-muted: #d1d5db;
+  --color-border: #374151;
+  --color-primary: #a78bfa;
+  --color-primary-hover: #c4b5fd;
+  --color-panel-bg: #312e81;
+  --shadow-card: 0 20px 60px rgb(0 0 0 / 35%);
+}
+
 body {
   margin: 0;
   font-family:
@@ -11,8 +35,8 @@ body {
     BlinkMacSystemFont,
     'Segoe UI',
     sans-serif;
-  background: #f4f6f8;
-  color: #1f2933;
+  background: var(--color-page-bg);
+  color: var(--color-text);
 }
 
 main {
@@ -28,24 +52,89 @@ h1 {
 
 .app-header {
   padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.app-header__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 .navigation {
   display: flex;
   gap: 16px;
-  justify-content: center;
+  align-items: center;
 }
 
 .navigation a {
-  color: #4b5563;
+  color: var(--color-muted);
   font-weight: 600;
   text-decoration: none;
 }
 
 .navigation a.active {
-  color: #7c3aed;
+  color: var(--color-primary);
   text-decoration: underline;
+}
+
+form,
+.search-section,
+.results-section,
+.card,
+.empty-message,
+.error-message,
+.loader,
+.error-boundary,
+.not-found-card,
+.about-card {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.theme-toggle {
+  position: absolute;
+  right: 0;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  border: 2px solid var(--color-primary);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-primary);
+
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--color-panel-bg);
+}
+
+.theme-toggle:active {
+  transform: translateY(0);
+}
+
+.theme-toggle:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(124 58 237 / 25%);
 }
 
 form {
@@ -53,7 +142,6 @@ form {
   gap: 12px;
   margin-bottom: 24px;
   padding: 20px;
-  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -84,7 +172,6 @@ input:focus-visible {
 .results-section {
   padding: 20px;
   margin-bottom: 24px;
-  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -101,7 +188,6 @@ input:focus-visible {
 .card {
   position: relative;
   padding: 16px;
-  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -184,7 +270,6 @@ input:focus-visible {
 .loader {
   padding: 24px;
   text-align: center;
-  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -193,7 +278,6 @@ input:focus-visible {
   margin: 80px auto;
   padding: 32px;
   text-align: center;
-  background: #ffffff;
   border-radius: 12px;
 }
 
@@ -218,7 +302,7 @@ input:focus-visible {
   padding: 24px;
   border: 2px solid #7c3aed;
   border-radius: 12px;
-  background: #faf5ff;
+  background: var(--color-panel-bg);
 }
 
 .character-details h2 {
@@ -297,7 +381,6 @@ input:focus-visible {
   width: 100%;
   padding: 48px 32px;
   border-radius: 24px;
-  background: #ffffff;
   box-shadow: 0 20px 60px rgb(15 23 42 / 10%);
   text-align: center;
 }
@@ -364,7 +447,6 @@ input:focus-visible {
   width: 100%;
   padding: 48px;
   border-radius: 24px;
-  background: #ffffff;
   box-shadow: 0 20px 60px rgb(15 23 42 / 10%);
 }
 
@@ -429,11 +511,12 @@ input:focus-visible {
   margin: 24px auto 0;
   padding: 16px 20px;
 
-  border: 1px solid #ddd6fe;
+  border: 1px solid;
   border-radius: 16px;
-  background: rgb(255 255 255 / 94%);
   box-shadow: 0 16px 40px rgb(15 23 42 / 16%);
   backdrop-filter: blur(8px);
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
 }
 
 .selected-items-flyout__count {
@@ -469,6 +552,14 @@ input:focus-visible {
 }
 
 @media (max-width: 640px) {
+  .app-header__inner {
+    justify-content: space-between;
+  }
+
+  .theme-toggle {
+    position: static;
+  }
+
   .about-card {
     padding: 32px 24px;
   }
