@@ -31,7 +31,7 @@ const selectedItemsSlice = createSlice({
         return;
       }
 
-      state.items.push(item);
+      state.items = [...state.items, item];
     },
 
     removeSelectedItem: (state, action: PayloadAction<number>) => {

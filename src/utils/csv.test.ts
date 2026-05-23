@@ -7,8 +7,13 @@ describe('csv utils', () => {
   it('creates CSV content for selected items', () => {
     const csv = createSelectedItemsCsv([mockSelectedRick]);
 
-    expect(csv).toContain('id,name,status,species,gender,detailsUrl');
-    expect(csv).toContain('1,Rick Sanchez,Alive,Human,Male,/characters/1');
+    expect(csv).toContain(
+      'id,name,description,status,species,gender,detailsUrl',
+    );
+
+    expect(csv).toContain(
+      '1,Rick Sanchez,"Human, Alive, Male",Alive,Human,Male,/characters/1',
+    );
   });
 
   it('escapes CSV values with quotes and commas', () => {
