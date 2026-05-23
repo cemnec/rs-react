@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
@@ -64,6 +64,8 @@ describe('App routes', () => {
       screen.getByRole('heading', { name: /character details/i }),
     ).toBeInTheDocument();
 
-    expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
+    await waitFor(() => {
+      expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
+    });
   });
 });
