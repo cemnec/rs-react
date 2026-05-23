@@ -2,12 +2,12 @@ import type { ReactElement } from 'react';
 
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { clearSelectedItems } from '../../store/selectedItemsSlice';
+import { downloadSelectedItemsCsv } from '../../utils/csv';
 
 function SelectedItemsFlyout(): ReactElement | null {
   const dispatch = useAppDispatch();
-  const selectedItemsCount = useAppSelector(
-    (state) => state.selectedItems.items.length,
-  );
+  const selectedItems = useAppSelector((state) => state.selectedItems.items);
+  const selectedItemsCount = selectedItems.length;
 
   if (selectedItemsCount === 0) {
     return null;
@@ -15,6 +15,10 @@ function SelectedItemsFlyout(): ReactElement | null {
 
   const handleUnselectAll = (): void => {
     dispatch(clearSelectedItems());
+  };
+
+  const handleDownload = (): void => {
+    downloadSelectedItemsCsv(selectedItems);
   };
 
   return (
@@ -28,7 +32,7 @@ function SelectedItemsFlyout(): ReactElement | null {
           Unselect all
         </button>
 
-        <button type="button" disabled>
+        <button type="button" onClick={handleDownload}>
           Download
         </button>
       </div>

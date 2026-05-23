@@ -1,11 +1,16 @@
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { toggleSelectedItem } from '../../store/selectedItemsSlice';
 import { mockSelectedRick } from '../../test-utils/mockCharacters';
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
+import { downloadSelectedItemsCsv } from '../../utils/csv';
 import SelectedItemsFlyout from './SelectedItemsFlyout';
+
+vi.mock('../../utils/csv', () => ({
+  downloadSelectedItemsCsv: vi.fn(),
+}));
 
 describe('SelectedItemsFlyout', () => {
   it('does not render when there are no selected items', () => {
@@ -44,5 +49,19 @@ describe('SelectedItemsFlyout', () => {
     expect(
       screen.queryByLabelText(/selected items panel/i),
     ).not.toBeInTheDocument();
+  });
+
+  it('downloads selected items when Download button is clicked', async () => {
+    const user = userEvent.setup();
+
+    const { store } = renderWithProviders(<SelectedItemsFlyout />);
+
+    act(() => {
+      store.dispatch(toggleSelectedItem(mockSelectedRick));
+    });
+
+    await user.click(screen.getByRole('button', { name: /download/i }));
+
+    expect(downloadSelectedItemsCsv).toHaveBeenCalledWith([mockSelectedRick]);
   });
 });
