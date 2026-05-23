@@ -387,7 +387,7 @@ input:focus-visible {
 
 .not-found-code {
   margin: 0;
-  color: #7c3aed;
+  color: var(--color-primary);
   font-size: 96px;
   font-weight: 800;
   line-height: 1;
@@ -395,13 +395,13 @@ input:focus-visible {
 
 .not-found-card h1 {
   margin: 16px 0 0;
-  color: #111827;
+  color: var(--color-text);
   font-size: 32px;
 }
 
 .not-found-description {
   margin: 16px auto 32px;
-  color: #4b5563;
+  color: var(--color-muted);
   font-size: 18px;
   line-height: 1.5;
 }
@@ -414,14 +414,14 @@ input:focus-visible {
   min-height: 44px;
   padding: 0 24px;
   border-radius: 12px;
-  background: #7c3aed;
+  background: var(--color-primary);
   color: #ffffff;
   font-weight: 700;
   text-decoration: none;
 }
 
 .not-found-link:hover {
-  background: #6d28d9;
+  background: var(--color-primary-hover);
 }
 
 @media (max-width: 900px) {
@@ -452,7 +452,7 @@ input:focus-visible {
 
 .about-eyebrow {
   margin: 0 0 12px;
-  color: #7c3aed;
+  color: var(--color-primary);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -461,14 +461,14 @@ input:focus-visible {
 
 .about-card h1 {
   margin: 0;
-  color: #111827;
+  color: var(--color-text);
   font-size: 40px;
   line-height: 1.1;
 }
 
 .about-description {
   margin: 24px 0;
-  color: #4b5563;
+  color: var(--color-muted);
   font-size: 18px;
   line-height: 1.6;
 }
@@ -479,22 +479,22 @@ input:focus-visible {
   margin: 0 0 32px;
   padding: 20px;
   border-radius: 16px;
-  background: #f9fafb;
+  background: var(--color-page-bg);
 }
 
 .about-info p {
   margin: 0;
-  color: #374151;
+  color: var(--color-muted);
   font-size: 16px;
 }
 
 .about-info span {
-  color: #111827;
+  color: var(--color-text);
   font-weight: 700;
 }
 
 .about-link:hover {
-  background: #6d28d9;
+  background: var(--color-primary-hover);
 }
 
 .selected-items-flyout {
@@ -516,12 +516,12 @@ input:focus-visible {
   box-shadow: 0 16px 40px rgb(15 23 42 / 16%);
   backdrop-filter: blur(8px);
   border-color: var(--color-border);
-  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+  background: var(--color-surface);
 }
 
 .selected-items-flyout__count {
   margin: 0;
-  color: #111827;
+  color: var(--color-muted);
   font-size: 16px;
 }
 
@@ -533,16 +533,17 @@ input:focus-visible {
 .selected-items-flyout__actions button {
   min-height: 40px;
   padding: 0 16px;
-  border: 1px solid #7c3aed;
+  border: 1px solid;
   border-radius: 10px;
-  background: #ffffff;
-  color: #5b21b6;
   font-weight: 700;
   cursor: pointer;
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+  color: var(--color-primary);
 }
 
 .selected-items-flyout__actions button:hover:not(:disabled) {
-  background: #f5f3ff;
+  background: var(--color-panel-bg);
 }
 
 .selected-items-flyout__actions button:disabled {
