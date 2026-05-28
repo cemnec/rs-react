@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
 import App from './App';
-import { mockCharactersResponse, mockRick } from './test-utils/mockCharacters';
+import { toggleSelectedItem } from './store/selectedItemsSlice';
+import { type AppStore, createAppStore } from './store/store';
+import {
+  mockCharactersResponse,
+  mockRick,
+  mockSelectedRick,
+} from './test-utils/mockCharacters';
 import { renderWithProviders } from './test-utils/renderWithProviders';
 
 vi.mock('./api/charactersApi', () => ({
@@ -14,9 +20,10 @@ vi.mock('./api/charactersApi', () => ({
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
 const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
 
-const renderApp = (initialEntry = '/?page=1') => {
+const renderApp = (initialEntry = '/?page=1', store?: AppStore) => {
   return renderWithProviders(<App />, {
     route: initialEntry,
+    store,
   });
 };
 
@@ -53,6 +60,18 @@ describe('App routes', () => {
     expect(
       screen.getByRole('heading', { name: /page not found/i }),
     ).toBeInTheDocument();
+  });
+
+  it('keeps selected items flyout available outside the main page route', () => {
+    const store = createAppStore();
+
+    store.dispatch(toggleSelectedItem(mockSelectedRick));
+
+    renderApp('/about', store);
+
+    expect(screen.getByLabelText(/selected items panel/i)).toBeInTheDocument();
+    expect(screen.getByText(/selected items:/i)).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
   });
 
   it('renders character details route inside main page', async () => {

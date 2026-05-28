@@ -6,7 +6,6 @@ import CardList from '../../components/CardList';
 import ErrorMessage from '../../components/ErrorMessage';
 import Loader from '../../components/Loader';
 import Search from '../../components/Search';
-import SelectedItemsFlyout from '../../components/SelectedItemsFlyout';
 import { SEARCH_TERM_STORAGE_KEY } from '../../constants/storage';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import type { Character, CharactersResponse } from '../../types/character';
@@ -202,8 +201,6 @@ function MainPage(): ReactElement {
           <button onClick={triggerError}>Throw Error</button>
         </div>
       </section>
-
-      <SelectedItemsFlyout />
     </main>
   );
 }

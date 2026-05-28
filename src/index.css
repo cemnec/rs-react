@@ -11,7 +11,21 @@
   --color-primary: #7c3aed;
   --color-primary-hover: #6d28d9;
   --color-panel-bg: #faf5ff;
+  --color-on-primary: #ffffff;
+  --color-focus-outline: #a78bfa;
+  --color-focus-ring: rgb(124 58 237 / 25%);
+  --color-checkbox-border: #d1d5db;
+  --color-checkbox-bg: rgb(255 255 255 / 92%);
+  --color-checkbox-text: #111827;
+  --color-checkbox-hover-bg: #f5f3ff;
+  --color-close-icon: #4b5563;
+  --color-close-hover-bg: #ede9fe;
+  --color-close-hover-icon: #111827;
+  --color-disabled-border: #d1d5db;
+  --color-disabled-text: #9ca3af;
   --shadow-card: 0 20px 60px rgb(15 23 42 / 10%);
+  --shadow-checkbox: 0 6px 16px rgb(15 23 42 / 12%);
+  --shadow-flyout: 0 16px 40px rgb(15 23 42 / 16%);
 }
 
 :root[data-theme='dark'] {
@@ -23,7 +37,21 @@
   --color-primary: #a78bfa;
   --color-primary-hover: #c4b5fd;
   --color-panel-bg: #312e81;
+  --color-on-primary: #111827;
+  --color-focus-outline: #c4b5fd;
+  --color-focus-ring: rgb(196 181 253 / 30%);
+  --color-checkbox-border: #4b5563;
+  --color-checkbox-bg: rgb(31 41 55 / 92%);
+  --color-checkbox-text: #f9fafb;
+  --color-checkbox-hover-bg: #312e81;
+  --color-close-icon: #d1d5db;
+  --color-close-hover-bg: #4c1d95;
+  --color-close-hover-icon: #ffffff;
+  --color-disabled-border: #4b5563;
+  --color-disabled-text: #9ca3af;
   --shadow-card: 0 20px 60px rgb(0 0 0 / 35%);
+  --shadow-checkbox: 0 6px 16px rgb(0 0 0 / 35%);
+  --shadow-flyout: 0 16px 40px rgb(0 0 0 / 40%);
 }
 
 body {
@@ -134,7 +162,7 @@ form,
 
 .theme-toggle:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgb(124 58 237 / 25%);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 form {
@@ -164,7 +192,7 @@ button:disabled {
 a:focus-visible,
 button:focus-visible,
 input:focus-visible {
-  outline: 3px solid #a78bfa;
+  outline: 3px solid var(--color-focus-outline);
   outline-offset: 3px;
 }
 
@@ -220,31 +248,31 @@ input:focus-visible {
   gap: 6px;
 
   padding: 6px 10px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--color-checkbox-border);
   border-radius: 999px;
 
-  background: rgb(255 255 255 / 92%);
-  color: #111827;
+  background: var(--color-checkbox-bg);
+  color: var(--color-checkbox-text);
 
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
 
   cursor: pointer;
-  box-shadow: 0 6px 16px rgb(15 23 42 / 12%);
+  box-shadow: var(--shadow-checkbox);
   backdrop-filter: blur(6px);
 }
 
 .card-checkbox:hover {
-  border-color: #7c3aed;
-  background: #f5f3ff;
+  border-color: var(--color-primary);
+  background: var(--color-checkbox-hover-bg);
 }
 
 .card-checkbox input {
   width: 14px;
   height: 14px;
   margin: 0;
-  accent-color: #7c3aed;
+  accent-color: var(--color-primary);
   cursor: pointer;
 }
 
@@ -300,7 +328,7 @@ input:focus-visible {
 .character-details {
   position: relative;
   padding: 24px;
-  border: 2px solid #7c3aed;
+  border: 2px solid var(--color-primary);
   border-radius: 12px;
   background: var(--color-panel-bg);
 }
@@ -335,7 +363,7 @@ input:focus-visible {
   height: 2px;
 
   border-radius: 999px;
-  background: #4b5563;
+  background: var(--color-close-icon);
 }
 
 .character-details__close::before {
@@ -348,14 +376,14 @@ input:focus-visible {
 
 .character-details__close:hover,
 .character-details__close:focus-visible {
-  background: #ede9fe;
+  background: var(--color-close-hover-bg);
 }
 
 .character-details__close:hover::before,
 .character-details__close:hover::after,
 .character-details__close:focus-visible::before,
 .character-details__close:focus-visible::after {
-  background: #111827;
+  background: var(--color-close-hover-icon);
 }
 
 .character-details img {
@@ -381,7 +409,7 @@ input:focus-visible {
   width: 100%;
   padding: 48px 32px;
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgb(15 23 42 / 10%);
+  box-shadow: var(--shadow-card);
   text-align: center;
 }
 
@@ -415,7 +443,7 @@ input:focus-visible {
   padding: 0 24px;
   border-radius: 12px;
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-on-primary);
   font-weight: 700;
   text-decoration: none;
 }
@@ -447,7 +475,7 @@ input:focus-visible {
   width: 100%;
   padding: 48px;
   border-radius: 24px;
-  box-shadow: 0 20px 60px rgb(15 23 42 / 10%);
+  box-shadow: var(--shadow-card);
 }
 
 .about-eyebrow {
@@ -513,7 +541,7 @@ input:focus-visible {
 
   border: 1px solid;
   border-radius: 16px;
-  box-shadow: 0 16px 40px rgb(15 23 42 / 16%);
+  box-shadow: var(--shadow-flyout);
   backdrop-filter: blur(8px);
   border-color: var(--color-border);
   background: var(--color-surface);
@@ -547,8 +575,8 @@ input:focus-visible {
 }
 
 .selected-items-flyout__actions button:disabled {
-  border-color: #d1d5db;
-  color: #9ca3af;
+  border-color: var(--color-disabled-border);
+  color: var(--color-disabled-text);
   cursor: not-allowed;
 }
 
