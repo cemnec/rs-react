@@ -1,6 +1,8 @@
-import type { ReactElement } from 'react';
+import React, { type ReactElement } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { toggleSelectedItem } from '../../store/selectedItemsSlice';
 import type { Character } from '../../types/character';
 
 interface Props {
@@ -9,9 +11,40 @@ interface Props {
 
 function Card({ character }: Props): ReactElement {
   const [searchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
+
+  const isSelected = useAppSelector((state) =>
+    state.selectedItems.items.some(
+      (selectedItem) => selectedItem.id === character.id,
+    ),
+  );
+
+  const handleSelectionChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    event.stopPropagation();
+
+    dispatch(
+      toggleSelectedItem({
+        ...character,
+        detailsUrl: `/characters/${character.id}`,
+      }),
+    );
+  };
 
   return (
     <article className="card">
+      <label className="card-checkbox">
+        <input
+          type="checkbox"
+          checked={isSelected}
+          onChange={handleSelectionChange}
+          onClick={(event) => event.stopPropagation()}
+          aria-label={`Select ${character.name}`}
+        />
+        Select
+      </label>
+
       <Link
         to={{
           pathname: `/characters/${character.id}`,

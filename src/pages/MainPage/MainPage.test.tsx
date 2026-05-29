@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacters } from '../../api/charactersApi';
@@ -11,6 +11,7 @@ import {
   mockMorty,
   mockSinglePageResponse,
 } from '../../test-utils/mockCharacters';
+import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import MainPage from './MainPage';
 
 vi.mock('../../api/charactersApi', () => ({
@@ -20,24 +21,26 @@ vi.mock('../../api/charactersApi', () => ({
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
 
 const renderMainPage = (initialEntry = '/?page=1') => {
-  return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <Routes>
-        <Route path="/" element={<MainPage />} />
-      </Routes>
-    </MemoryRouter>,
+  return renderWithProviders(
+    <Routes>
+      <Route path="/" element={<MainPage />} />
+    </Routes>,
+    {
+      route: initialEntry,
+    },
   );
 };
 
 const renderMainPageWithErrorBoundary = (initialEntry = '/?page=1') => {
-  return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <ErrorBoundary>
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-        </Routes>
-      </ErrorBoundary>
-    </MemoryRouter>,
+  return renderWithProviders(
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+      </Routes>
+    </ErrorBoundary>,
+    {
+      route: initialEntry,
+    },
   );
 };
 

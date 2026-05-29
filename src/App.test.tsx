@@ -1,10 +1,16 @@
-import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
 import App from './App';
-import { mockCharactersResponse, mockRick } from './test-utils/mockCharacters';
+import { toggleSelectedItem } from './store/selectedItemsSlice';
+import { type AppStore, createAppStore } from './store/store';
+import {
+  mockCharactersResponse,
+  mockRick,
+  mockSelectedRick,
+} from './test-utils/mockCharacters';
+import { renderWithProviders } from './test-utils/renderWithProviders';
 
 vi.mock('./api/charactersApi', () => ({
   fetchCharacters: vi.fn(),
@@ -14,12 +20,11 @@ vi.mock('./api/charactersApi', () => ({
 const mockedFetchCharacters = vi.mocked(fetchCharacters);
 const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
 
-const renderApp = (initialEntry = '/?page=1') => {
-  return render(
-    <MemoryRouter initialEntries={[initialEntry]}>
-      <App />
-    </MemoryRouter>,
-  );
+const renderApp = (initialEntry = '/?page=1', store?: AppStore) => {
+  return renderWithProviders(<App />, {
+    route: initialEntry,
+    store,
+  });
 };
 
 describe('App routes', () => {
@@ -57,6 +62,18 @@ describe('App routes', () => {
     ).toBeInTheDocument();
   });
 
+  it('keeps selected items flyout available outside the main page route', () => {
+    const store = createAppStore();
+
+    store.dispatch(toggleSelectedItem(mockSelectedRick));
+
+    renderApp('/about', store);
+
+    expect(screen.getByLabelText(/selected items panel/i)).toBeInTheDocument();
+    expect(screen.getByText(/selected items:/i)).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
   it('renders character details route inside main page', async () => {
     renderApp('/characters/1?page=1');
 
@@ -66,6 +83,8 @@ describe('App routes', () => {
       screen.getByRole('heading', { name: /character details/i }),
     ).toBeInTheDocument();
 
-    expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
+    await waitFor(() => {
+      expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
+    });
   });
 });
