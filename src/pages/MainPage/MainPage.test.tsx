@@ -3,7 +3,6 @@ import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchCharacters } from '../../api/charactersApi';
 import ErrorBoundary from '../../components/ErrorBoundary';
 import { SEARCH_TERM_STORAGE_KEY } from '../../constants/storage';
 import {
@@ -14,11 +13,62 @@ import {
 import { renderWithProviders } from '../../test-utils/renderWithProviders';
 import MainPage from './MainPage';
 
-vi.mock('../../api/charactersApi', () => ({
-  fetchCharacters: vi.fn(),
-}));
+interface MockResponseConfig {
+  body: unknown;
+  status?: number;
+}
 
-const mockedFetchCharacters = vi.mocked(fetchCharacters);
+const createJsonResponse = (body: unknown, status = 200): Response => {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
+
+const getRequestUrl = (request: unknown): string => {
+  if (request instanceof Request) {
+    return request.url;
+  }
+
+  if (request instanceof URL) {
+    return request.toString();
+  }
+
+  return String(request);
+};
+
+const getFetchUrls = (fetchMock: ReturnType<typeof vi.fn>): string[] => {
+  return fetchMock.mock.calls.map(([request]) => getRequestUrl(request));
+};
+
+const mockFetchResponses = (
+  ...responses: MockResponseConfig[]
+): ReturnType<typeof vi.fn> => {
+  const fetchMock = vi.fn<typeof fetch>();
+  const fallbackResponse: MockResponseConfig = responses.at(-1) ?? {
+    body: mockCharactersResponse,
+  };
+
+  for (const { body, status = 200 } of responses) {
+    fetchMock.mockResolvedValueOnce(createJsonResponse(body, status));
+  }
+
+  fetchMock.mockImplementation(() =>
+    Promise.resolve(
+      createJsonResponse(fallbackResponse.body, fallbackResponse.status),
+    ),
+  );
+
+  vi.stubGlobal('fetch', fetchMock);
+
+  return fetchMock;
+};
+
+const mockFetchCharacters = (body: unknown, status = 200) => {
+  return mockFetchResponses({ body, status });
+};
 
 const renderMainPage = (initialEntry = '/?page=1') => {
   return renderWithProviders(
@@ -47,11 +97,15 @@ const renderMainPageWithErrorBoundary = (initialEntry = '/?page=1') => {
 describe('MainPage', () => {
   beforeEach(() => {
     localStorage.clear();
-    mockedFetchCharacters.mockReset();
-    mockedFetchCharacters.mockResolvedValue(mockCharactersResponse);
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+
+    mockFetchCharacters(mockCharactersResponse);
   });
 
   it('loads and displays characters on initial render', async () => {
+    const fetchMock = vi.mocked(fetch);
+
     renderMainPage();
 
     expect(screen.getByText(/loading/i)).toBeInTheDocument();
@@ -59,11 +113,14 @@ describe('MainPage', () => {
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
     expect(screen.getByText('Morty Smith')).toBeInTheDocument();
 
-    expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
+    const requestUrl = getRequestUrl(fetchMock.mock.calls[0][0]);
+
+    expect(requestUrl).toContain('/character');
+    expect(requestUrl).toContain('page=1');
   });
 
   it('shows an error message when API request fails', async () => {
-    mockedFetchCharacters.mockRejectedValueOnce(new Error('API error'));
+    mockFetchCharacters({ error: 'API error' }, 500);
 
     renderMainPage();
 
@@ -80,22 +137,27 @@ describe('MainPage', () => {
     expect(await screen.findByDisplayValue('morty')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('morty', 1);
+      const fetchMock = vi.mocked(fetch);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('/character'))).toBe(true);
+      expect(urls.some((url) => url.includes('page=1'))).toBe(true);
+      expect(urls.some((url) => url.includes('name=morty'))).toBe(true);
     });
   });
 
   it('submits trimmed search term and saves it to localStorage', async () => {
     const user = userEvent.setup();
-
-    mockedFetchCharacters
-      .mockResolvedValueOnce(mockCharactersResponse)
-      .mockResolvedValueOnce(mockSinglePageResponse);
+    const fetchMock = mockFetchResponses(
+      { body: mockCharactersResponse },
+      { body: mockSinglePageResponse },
+    );
 
     renderMainPage();
 
     await screen.findByText('Rick Sanchez');
 
-    mockedFetchCharacters.mockClear();
+    fetchMock.mockClear();
 
     const input = screen.getByPlaceholderText(/search characters/i);
 
@@ -104,7 +166,11 @@ describe('MainPage', () => {
     await user.click(screen.getByRole('button', { name: /search/i }));
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('rick', 1);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('/character'))).toBe(true);
+      expect(urls.some((url) => url.includes('page=1'))).toBe(true);
+      expect(urls.some((url) => url.includes('name=rick'))).toBe(true);
     });
 
     expect(localStorage.getItem(SEARCH_TERM_STORAGE_KEY)).toBe('rick');
@@ -113,6 +179,7 @@ describe('MainPage', () => {
 
   it('does not make a new request when submitted search term has not changed', async () => {
     const user = userEvent.setup();
+    const fetchMock = vi.mocked(fetch);
 
     localStorage.setItem(SEARCH_TERM_STORAGE_KEY, 'rick');
 
@@ -121,18 +188,22 @@ describe('MainPage', () => {
     await screen.findByDisplayValue('rick');
     await screen.findByText('Rick Sanchez');
 
-    mockedFetchCharacters.mockClear();
+    fetchMock.mockClear();
 
     await user.click(screen.getByRole('button', { name: /search/i }));
 
-    expect(mockedFetchCharacters).not.toHaveBeenCalled();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('sets default page query parameter when it is missing from URL', async () => {
     renderMainPage('/');
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
+      const fetchMock = vi.mocked(fetch);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('/character'))).toBe(true);
+      expect(urls.some((url) => url.includes('page=1'))).toBe(true);
     });
   });
 
@@ -140,7 +211,11 @@ describe('MainPage', () => {
     renderMainPage('/?page=2');
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
+      const fetchMock = vi.mocked(fetch);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('/character'))).toBe(true);
+      expect(urls.some((url) => url.includes('page=2'))).toBe(true);
     });
   });
 
@@ -150,58 +225,64 @@ describe('MainPage', () => {
     renderMainPage('/?page=2');
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
-    });
+      const fetchMock = vi.mocked(fetch);
+      const urls = getFetchUrls(fetchMock);
 
-    mockedFetchCharacters.mockClear();
+      expect(urls.some((url) => url.includes('/character'))).toBe(true);
+      expect(urls.some((url) => url.includes('page=2'))).toBe(true);
+    });
 
     await user.type(screen.getByRole('textbox'), 'r');
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
+      const fetchMock = vi.mocked(fetch);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('page=1'))).toBe(true);
     });
   });
 
   it('handles pagination with next and previous buttons', async () => {
     const user = userEvent.setup();
-
-    mockedFetchCharacters
-      .mockResolvedValueOnce(mockCharactersResponse)
-      .mockResolvedValueOnce({
-        info: {
-          count: 1,
-          pages: 2,
-          next: null,
-          prev: 'https://rickandmortyapi.com/api/character?page=1',
+    const fetchMock = mockFetchResponses(
+      { body: mockCharactersResponse },
+      {
+        body: {
+          info: {
+            count: 1,
+            pages: 2,
+            next: null,
+            prev: 'https://rickandmortyapi.com/api/character?page=1',
+          },
+          results: [mockMorty],
         },
-        results: [mockMorty],
-      })
-      .mockResolvedValueOnce(mockCharactersResponse);
+      },
+      { body: mockCharactersResponse },
+    );
 
     renderMainPage();
 
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
 
-    mockedFetchCharacters.mockClear();
-
     await user.click(screen.getByRole('button', { name: /next/i }));
 
     await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 2);
+      const urls = getFetchUrls(fetchMock);
+
+      expect(urls.some((url) => url.includes('page=2'))).toBe(true);
     });
 
     expect(await screen.findByText('Morty Smith')).toBeInTheDocument();
     expect(screen.getByText(/page 2 of 2/i)).toBeInTheDocument();
 
-    mockedFetchCharacters.mockClear();
+    const callsBeforeReturningToPageOne = fetchMock.mock.calls.length;
 
     await user.click(screen.getByRole('button', { name: /prev/i }));
 
-    await waitFor(() => {
-      expect(mockedFetchCharacters).toHaveBeenCalledWith('', 1);
-    });
-
+    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
     expect(screen.getByText(/page 1 of 2/i)).toBeInTheDocument();
+
+    expect(fetchMock).toHaveBeenCalledTimes(callsBeforeReturningToPageOne);
   });
 
   it('renders ErrorBoundary fallback when Throw Error button is clicked', async () => {
@@ -216,5 +297,38 @@ describe('MainPage', () => {
     await user.click(screen.getByRole('button', { name: /throw error/i }));
 
     expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+  });
+
+  it('manually refreshes characters list when Refresh button is clicked', async () => {
+    const user = userEvent.setup();
+    const fetchMock = mockFetchResponses(
+      { body: mockCharactersResponse },
+      {
+        body: {
+          info: {
+            count: 1,
+            pages: 1,
+            next: null,
+            prev: null,
+          },
+          results: [mockMorty],
+        },
+      },
+    );
+
+    renderMainPage();
+
+    expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /refresh/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    const urls = getFetchUrls(fetchMock);
+
+    expect(urls.at(-1)).toContain('/character');
+    expect(urls.at(-1)).toContain('page=1');
   });
 });

@@ -1,7 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchCharacterById, fetchCharacters } from './api/charactersApi';
 import App from './App';
 import { toggleSelectedItem } from './store/selectedItemsSlice';
 import { type AppStore, createAppStore } from './store/store';
@@ -12,13 +11,42 @@ import {
 } from './test-utils/mockCharacters';
 import { renderWithProviders } from './test-utils/renderWithProviders';
 
-vi.mock('./api/charactersApi', () => ({
-  fetchCharacters: vi.fn(),
-  fetchCharacterById: vi.fn(),
-}));
+const createJsonResponse = (body: unknown, status = 200): Response => {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+};
 
-const mockedFetchCharacters = vi.mocked(fetchCharacters);
-const mockedFetchCharacterById = vi.mocked(fetchCharacterById);
+const getRequestUrl = (request: unknown): string => {
+  if (request instanceof Request) {
+    return request.url;
+  }
+
+  if (request instanceof URL) {
+    return request.toString();
+  }
+
+  return String(request);
+};
+
+const mockAppFetch = (): ReturnType<typeof vi.fn> => {
+  const fetchMock = vi.fn<typeof fetch>((request) => {
+    const requestUrl = getRequestUrl(request);
+
+    if (requestUrl.includes('/character/1')) {
+      return Promise.resolve(createJsonResponse(mockRick));
+    }
+
+    return Promise.resolve(createJsonResponse(mockCharactersResponse));
+  });
+
+  vi.stubGlobal('fetch', fetchMock);
+
+  return fetchMock;
+};
 
 const renderApp = (initialEntry = '/?page=1', store?: AppStore) => {
   return renderWithProviders(<App />, {
@@ -29,11 +57,10 @@ const renderApp = (initialEntry = '/?page=1', store?: AppStore) => {
 
 describe('App routes', () => {
   beforeEach(() => {
-    mockedFetchCharacters.mockReset();
-    mockedFetchCharacterById.mockReset();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
 
-    mockedFetchCharacters.mockResolvedValue(mockCharactersResponse);
-    mockedFetchCharacterById.mockResolvedValue(mockRick);
+    mockAppFetch();
   });
 
   it('renders main page on root route', async () => {
@@ -75,6 +102,8 @@ describe('App routes', () => {
   });
 
   it('renders character details route inside main page', async () => {
+    const fetchMock = vi.mocked(fetch);
+
     renderApp('/characters/1?page=1');
 
     expect(await screen.findByText('Rick Sanchez')).toBeInTheDocument();
@@ -84,7 +113,11 @@ describe('App routes', () => {
     ).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(mockedFetchCharacterById).toHaveBeenCalledWith('1');
+      const urls = fetchMock.mock.calls.map(([request]) =>
+        getRequestUrl(request),
+      );
+
+      expect(urls.some((url) => url.includes('/character/1'))).toBe(true);
     });
   });
 });

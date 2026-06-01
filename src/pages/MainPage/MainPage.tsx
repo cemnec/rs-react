@@ -1,17 +1,18 @@
 import { type ReactElement, useEffect, useState } from 'react';
 import { Outlet, useMatch, useSearchParams } from 'react-router';
 
-import { fetchCharacters } from '../../api/charactersApi';
+import { charactersApi, useGetCharactersQuery } from '../../api/charactersApi';
 import CardList from '../../components/CardList';
 import ErrorMessage from '../../components/ErrorMessage';
 import Loader from '../../components/Loader';
 import Search from '../../components/Search';
 import { SEARCH_TERM_STORAGE_KEY } from '../../constants/storage';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import type { Character, CharactersResponse } from '../../types/character';
+import { useAppDispatch } from '../../store/hooks';
 
 function MainPage(): ReactElement {
   const [searchParams, setSearchParams] = useSearchParams();
+  const dispatch = useAppDispatch();
 
   const pageParam: string | null = searchParams.get('page');
   const parsedPage: number = Number(pageParam);
@@ -25,11 +26,7 @@ function MainPage(): ReactElement {
   );
 
   const [appliedSearchTerm, setAppliedSearchTerm] = useState(searchTerm);
-  const [characters, setCharacters] = useState<Character[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [hasCrash, setHasCrash] = useState(false);
-  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (pageParam !== String(page)) {
@@ -46,43 +43,26 @@ function MainPage(): ReactElement {
 
   const hasPageParam: boolean = pageParam === String(page);
 
-  useEffect(() => {
-    if (!hasPageParam) return;
+  const { data, isLoading, isFetching, isError } = useGetCharactersQuery(
+    {
+      searchTerm: appliedSearchTerm,
+      page,
+    },
+    {
+      skip: !hasPageParam,
+    },
+  );
 
-    let isMounted: boolean = true;
+  const characters = data?.results ?? [];
+  const totalPages = data?.info.pages ?? 1;
+  const hasCharacters: boolean = characters.length > 0;
+  const isInitialLoading: boolean = isLoading || (isFetching && !data);
+  const errorMessage: string | null = isError
+    ? 'Characters not found. Try another search term.'
+    : null;
 
-    const loadCharacters = async (): Promise<void> => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const data: CharactersResponse = await fetchCharacters(
-          appliedSearchTerm,
-          page,
-        );
-
-        if (!isMounted) return;
-
-        setCharacters(data.results);
-        setTotalPages(data.info.pages);
-      } catch {
-        if (!isMounted) return;
-
-        setCharacters([]);
-        setError('Characters not found. Try another search term.');
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    void loadCharacters();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [appliedSearchTerm, page, hasPageParam]);
+  const detailsMatch = useMatch('/characters/:id');
+  const hasDetails = Boolean(detailsMatch);
 
   const handleSearchSubmit = (): void => {
     const trimmed = searchTerm.trim();
@@ -132,6 +112,12 @@ function MainPage(): ReactElement {
     }
   };
 
+  const handleRefresh = (): void => {
+    dispatch(
+      charactersApi.util.invalidateTags([{ type: 'Characters', id: 'LIST' }]),
+    );
+  };
+
   const triggerError = (): void => {
     setHasCrash(true);
   };
@@ -139,10 +125,6 @@ function MainPage(): ReactElement {
   if (hasCrash) {
     throw new Error('Test error for ErrorBoundary');
   }
-
-  const hasCharacters: boolean = characters.length > 0;
-  const detailsMatch = useMatch('/characters/:id');
-  const hasDetails = Boolean(detailsMatch);
 
   return (
     <main>
@@ -157,11 +139,11 @@ function MainPage(): ReactElement {
       </section>
 
       <section className="results-section">
-        {loading && <Loader />}
+        {isInitialLoading && <Loader />}
 
-        {error && <ErrorMessage message={error} />}
+        {errorMessage && <ErrorMessage message={errorMessage} />}
 
-        {!loading && !error && hasCharacters && (
+        {!isInitialLoading && !errorMessage && hasCharacters && (
           <div
             className={
               hasDetails ? 'content-layout with-details' : 'content-layout'
@@ -177,12 +159,12 @@ function MainPage(): ReactElement {
           </div>
         )}
 
-        {!loading && !error && !hasCharacters && (
+        {!isInitialLoading && !errorMessage && !hasCharacters && (
           <p className="empty-message">No results</p>
         )}
 
         <div className="bottom-controls">
-          {!loading && !error && hasCharacters && (
+          {!isInitialLoading && !errorMessage && hasCharacters && (
             <div className="pagination">
               <button onClick={handlePrevPage} disabled={page === 1}>
                 Prev
@@ -198,7 +180,17 @@ function MainPage(): ReactElement {
             </div>
           )}
 
-          <button onClick={triggerError}>Throw Error</button>
+          <button
+            type="button"
+            onClick={handleRefresh}
+            disabled={isFetching || !hasPageParam}
+          >
+            {isFetching && !isInitialLoading ? 'Refreshing...' : 'Refresh'}
+          </button>
+
+          <button type="button" onClick={triggerError}>
+            Throw Error
+          </button>
         </div>
       </section>
     </main>
