@@ -1,0 +1,22 @@
+{
+  "Navigation": {
+    "home": "Home",
+    "about": "About"
+  },
+  "HomePage": {
+    "title": "Rick and Morty characters",
+    "description": "Next.js migration is ready. Server-side search will be restored in the next step."
+  },
+  "AboutPage": {
+    "title": "About",
+    "description": "This application was migrated from Vite to Next.js App Router. It uses server rendering, localized routes and React Server Components."
+  },
+  "NotFoundPage": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to home"
+  },
+  "LanguageSwitcher": {
+    "label": "Language"
+  }
+}

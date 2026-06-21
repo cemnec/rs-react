@@ -1,0 +1,22 @@
+{
+  "Navigation": {
+    "home": "Главная",
+    "about": "О проекте"
+  },
+  "HomePage": {
+    "title": "Персонажи Rick and Morty",
+    "description": "Миграция на Next.js готова. Серверный поиск будет восстановлен на следующем шаге."
+  },
+  "AboutPage": {
+    "title": "О проекте",
+    "description": "Приложение было перенесено с Vite на Next.js App Router. Оно использует серверный рендеринг, локализованные маршруты и React Server Components."
+  },
+  "NotFoundPage": {
+    "title": "Страница не найдена",
+    "description": "Страница, которую вы ищете, не существует.",
+    "backHome": "Вернуться на главную"
+  },
+  "LanguageSwitcher": {
+    "label": "Язык"
+  }
+}
