@@ -1,7 +1,8 @@
 {
   "Navigation": {
     "home": "Главная",
-    "about": "О проекте"
+    "about": "О проекте",
+    "primary": "Основная навигация"
   },
   "HomePage": {
     "title": "Персонажи Rick and Morty",

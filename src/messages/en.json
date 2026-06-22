@@ -1,7 +1,8 @@
 {
   "Navigation": {
     "home": "Home",
-    "about": "About"
+    "about": "About",
+    "primary": "Primary navigation"
   },
   "HomePage": {
     "title": "Rick and Morty characters",

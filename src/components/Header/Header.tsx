@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { Suspense } from 'react';
 
 import LanguageSwitcher from '@/components/LanguageSwitcher/LanguageSwitcher';
 import { Link } from '@/i18n/navigation';
@@ -8,7 +9,7 @@ export default async function Header() {
 
   return (
     <header className="app-header">
-      <nav aria-label="Primary navigation" className="app-nav">
+      <nav aria-label={t('primary')} className="app-nav">
         <Link className="app-nav-link" href="/">
           {t('home')}
         </Link>
@@ -17,7 +18,9 @@ export default async function Header() {
         </Link>
       </nav>
 
-      <LanguageSwitcher />
+      <Suspense fallback={null}>
+        <LanguageSwitcher />
+      </Suspense>
     </header>
   );
 }
