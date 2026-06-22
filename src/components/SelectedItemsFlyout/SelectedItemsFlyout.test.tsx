@@ -1,6 +1,6 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { toggleSelectedItem } from '@/store/selectedItemsSlice';
 import { mockSelectedRick } from '@/test-utils/mockCharacters';
@@ -9,11 +9,6 @@ import { renderWithProviders } from '@/test-utils/renderWithProviders';
 import SelectedItemsFlyout from './SelectedItemsFlyout';
 
 describe('SelectedItemsFlyout', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
   it('does not render when there are no selected items', () => {
     renderWithProviders(<SelectedItemsFlyout />);
 
@@ -44,52 +39,37 @@ describe('SelectedItemsFlyout', () => {
     expect(screen.queryByText('1 selected characters')).not.toBeInTheDocument();
   });
 
-  it('downloads CSV from server route', async () => {
-    const user = userEvent.setup();
-
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response('id,name\r\n1,Rick Sanchez', {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/csv; charset=utf-8',
-        },
-      }),
-    );
-
-    vi.stubGlobal('fetch', fetchMock);
-
-    const createObjectUrlMock = vi
-      .spyOn(URL, 'createObjectURL')
-      .mockReturnValue('blob:mock-url');
-
-    const revokeObjectUrlMock = vi
-      .spyOn(URL, 'revokeObjectURL')
-      .mockImplementation(() => undefined);
-
-    const anchorClickMock = vi
-      .spyOn(HTMLAnchorElement.prototype, 'click')
-      .mockImplementation(() => undefined);
-
+  it('renders form that posts selected items to server CSV route', () => {
     const { store } = renderWithProviders(<SelectedItemsFlyout />);
 
     act(() => {
       store.dispatch(toggleSelectedItem(mockSelectedRick));
     });
 
-    await user.click(screen.getByRole('button', { name: 'Download CSV' }));
-
-    await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith('/api/selected-items-csv', {
-        body: JSON.stringify({ items: [mockSelectedRick] }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        method: 'POST',
-      });
+    const downloadButton = screen.getByRole('button', {
+      name: 'Download CSV',
     });
 
-    expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
-    expect(anchorClickMock).toHaveBeenCalledTimes(1);
-    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:mock-url');
+    expect(downloadButton).toHaveAttribute('type', 'submit');
+
+    const form = downloadButton.closest('form');
+
+    if (!form) {
+      throw new Error('Download form was not found');
+    }
+
+    expect(form).toHaveAttribute('action', '/api/selected-items-csv');
+    expect(form).toHaveAttribute('method', 'post');
+
+    const hiddenInput = form.querySelector<HTMLInputElement>(
+      'input[name="items"]',
+    );
+
+    if (!hiddenInput) {
+      throw new Error('Selected items hidden input was not found');
+    }
+
+    expect(hiddenInput).toHaveAttribute('type', 'hidden');
+    expect(hiddenInput).toHaveValue(JSON.stringify([mockSelectedRick]));
   });
 });
