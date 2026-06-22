@@ -63,9 +63,7 @@ export default async function HomePage({ params, searchParams }: Props) {
         {t('results', { count: characters.info.count })}
       </p>
 
-      <div
-        className={`search-layout${selectedId ? ' search-layout--with-details' : ''}`}
-      >
+      <div className="search-layout search-layout--with-details">
         <div className="search-layout__results">
           <CharacterList
             characters={characters.results}
@@ -82,9 +80,7 @@ export default async function HomePage({ params, searchParams }: Props) {
           />
         </div>
 
-        {selectedId ? (
-          <CharacterDetails page={page} query={query} selectedId={selectedId} />
-        ) : null}
+        <CharacterDetails page={page} query={query} selectedId={selectedId} />
       </div>
     </section>
   );

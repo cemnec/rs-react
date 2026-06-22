@@ -5,7 +5,7 @@ import { Link } from '@/i18n/navigation';
 import { getCharacterById } from '@/services/characters';
 
 type Props = {
-  selectedId: string;
+  selectedId?: string;
   query: string;
   page: number;
 };
@@ -35,6 +35,21 @@ export default async function CharacterDetails({
 }: Props) {
   const t = await getTranslations('CharacterDetails');
   const closeHref = buildCloseHref({ query, page });
+
+  if (!selectedId) {
+    return (
+      <aside
+        className="details-panel details-panel--empty"
+        aria-labelledby="character-details-title"
+      >
+        <h2 className="details-panel__title" id="character-details-title">
+          {t('title')}
+        </h2>
+
+        <p>{t('empty')}</p>
+      </aside>
+    );
+  }
 
   const character = await getCharacterById(selectedId);
 
