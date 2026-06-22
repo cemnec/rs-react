@@ -1,13 +1,25 @@
-import type { SelectedItem } from '../store/selectedItemsSlice.ts';
-import type { Character, CharactersResponse } from '../types/character';
+import type { Character, CharactersResponse } from '@/types/character';
+import type { SelectedItem } from '@/types/selectedItem';
 
 export const mockRick: Character = {
   id: 1,
   name: 'Rick Sanchez',
   status: 'Alive',
   species: 'Human',
+  type: '',
   gender: 'Male',
-  image: 'https://example.com/rick.png',
+  origin: {
+    name: 'Earth (C-137)',
+    url: '',
+  },
+  location: {
+    name: 'Citadel of Ricks',
+    url: '',
+  },
+  image: 'https://rickandmortyapi.com/api/character/avatar/1.jpeg',
+  episode: ['https://rickandmortyapi.com/api/episode/1'],
+  url: 'https://rickandmortyapi.com/api/character/1',
+  created: '2017-11-04T18:48:46.250Z',
 };
 
 export const mockMorty: Character = {
@@ -15,8 +27,20 @@ export const mockMorty: Character = {
   name: 'Morty Smith',
   status: 'Alive',
   species: 'Human',
+  type: '',
   gender: 'Male',
-  image: 'https://example.com/morty.png',
+  origin: {
+    name: 'unknown',
+    url: '',
+  },
+  location: {
+    name: 'Citadel of Ricks',
+    url: '',
+  },
+  image: 'https://rickandmortyapi.com/api/character/avatar/2.jpeg',
+  episode: ['https://rickandmortyapi.com/api/episode/1'],
+  url: 'https://rickandmortyapi.com/api/character/2',
+  created: '2017-11-04T18:50:21.651Z',
 };
 
 export const mockCharacters: Character[] = [mockRick, mockMorty];
@@ -31,19 +55,11 @@ export const mockCharactersResponse: CharactersResponse = {
   results: mockCharacters,
 };
 
-export const mockSinglePageResponse: CharactersResponse = {
-  info: {
-    count: 1,
-    pages: 1,
-    next: null,
-    prev: null,
-  },
-  results: [mockRick],
+export const mockSelectedRick: SelectedItem = {
+  id: mockRick.id,
+  name: mockRick.name,
+  status: mockRick.status,
+  species: mockRick.species,
+  gender: mockRick.gender,
+  detailsUrl: '/?page=1&selectedId=1',
 };
-
-const createMockSelectedItem = (character: Character): SelectedItem => ({
-  ...character,
-  detailsUrl: `/characters/${character.id}`,
-});
-
-export const mockSelectedRick: SelectedItem = createMockSelectedItem(mockRick);

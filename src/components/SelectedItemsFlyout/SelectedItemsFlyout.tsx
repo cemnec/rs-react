@@ -1,43 +1,38 @@
-import type { ReactElement } from 'react';
+'use client';
 
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { clearSelectedItems } from '../../store/selectedItemsSlice';
-import { downloadSelectedItemsCsv } from '../../utils/csv';
+import { useTranslations } from 'next-intl';
 
-function SelectedItemsFlyout(): ReactElement | null {
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { clearSelectedItems } from '@/store/selectedItemsSlice';
+
+export default function SelectedItemsFlyout() {
+  const t = useTranslations('SelectedItemsFlyout');
   const dispatch = useAppDispatch();
-  const selectedItems = useAppSelector((state) => state.selectedItems.items);
-  const selectedItemsCount = selectedItems.length;
+  const items = useAppSelector((state) => state.selectedItems.items);
 
-  if (selectedItemsCount === 0) {
+  if (items.length === 0) {
     return null;
   }
 
-  const handleUnselectAll = (): void => {
-    dispatch(clearSelectedItems());
-  };
-
-  const handleDownload = (): void => {
-    downloadSelectedItemsCsv(selectedItems);
-  };
-
   return (
-    <aside className="selected-items-flyout" aria-label="Selected items panel">
+    <aside className="selected-items-flyout">
       <p className="selected-items-flyout__count">
-        Selected items: <strong>{selectedItemsCount}</strong>
+        {t('count', { count: items.length })}
       </p>
 
-      <div className="selected-items-flyout__actions">
-        <button type="button" onClick={handleUnselectAll}>
-          Unselect all
-        </button>
+      <form
+        action="/api/selected-items-csv"
+        className="selected-items-flyout__actions"
+        method="post"
+      >
+        <input name="items" type="hidden" value={JSON.stringify(items)} />
 
-        <button type="button" onClick={handleDownload}>
-          Download
+        <button type="submit">{t('download')}</button>
+
+        <button onClick={() => dispatch(clearSelectedItems())} type="button">
+          {t('clear')}
         </button>
-      </div>
+      </form>
     </aside>
   );
 }
-
-export default SelectedItemsFlyout;

@@ -1,4 +1,4 @@
-import type { SelectedItem } from '../store/selectedItemsSlice';
+import type { SelectedItem } from '@/types/selectedItem';
 
 const CSV_HEADERS = [
   'id',
@@ -8,24 +8,25 @@ const CSV_HEADERS = [
   'species',
   'gender',
   'detailsUrl',
-];
+] as const;
 
-const escapeCsvValue = (value: string | number): string => {
-  const stringValue: string = String(value);
+function escapeCsvValue(value: string | number): string {
+  const stringValue = String(value);
 
   if (
     stringValue.includes(',') ||
     stringValue.includes('"') ||
-    stringValue.includes('\n')
+    stringValue.includes('\n') ||
+    stringValue.includes('\r')
   ) {
     return `"${stringValue.replaceAll('"', '""')}"`;
   }
 
   return stringValue;
-};
+}
 
-export const createSelectedItemsCsv = (items: SelectedItem[]): string => {
-  const rows: string[] = items.map((item) => {
+export function createSelectedItemsCsv(items: SelectedItem[]): string {
+  const rows = items.map((item) => {
     const description = `${item.species}, ${item.status}, ${item.gender}`;
 
     return [
@@ -42,20 +43,4 @@ export const createSelectedItemsCsv = (items: SelectedItem[]): string => {
   });
 
   return [CSV_HEADERS.join(','), ...rows].join('\r\n');
-};
-
-export const downloadSelectedItemsCsv = (items: SelectedItem[]): void => {
-  const csvContent: string = createSelectedItemsCsv(items);
-  const blob = new Blob([csvContent], {
-    type: 'text/csv;charset=utf-8',
-  });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-
-  link.href = url;
-  link.download = `${items.length}_items.csv`;
-  link.click();
-
-  URL.revokeObjectURL(url);
-};
+}

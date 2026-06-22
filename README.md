@@ -1,17 +1,30 @@
-# RS React Class Components
+# RS React Next.js SSR/SSG
 
-React application for RS School React course Task 1: Class Components.
+React application for RS School React course task: Next.js SSR/SSG.
 
 ## Tech stack
 
+- Next.js
 - React
 - TypeScript
-- Vite
+- next-intl
+- Redux Toolkit
 - pnpm
 - ESLint
 - Prettier
+- Stylelint
+- Vitest
 
-## Scripts
+## Features
+
+- Migration from Vite to Next.js App Router
+- Locale-based routing with English and Russian translations
+- Server-rendered character search
+- Server-rendered character details
+- Images rendered with `next/image`
+- Localized navigation via `next-intl`
+
+## Getting started
 
 Install dependencies:
 
@@ -20,16 +33,19 @@ pnpm install
 ```
 
 Run development server:
+
 ```bash
 pnpm dev
 ```
 
 Build project:
+
 ```bash
 pnpm build
 ```
 
 Run linter:
+
 ```bash
 pnpm lint
 ```

@@ -1,40 +1,27 @@
 import { render, type RenderOptions } from '@testing-library/react';
 import type { ReactElement, ReactNode } from 'react';
 import { Provider } from 'react-redux';
-import { MemoryRouter } from 'react-router';
 
-import { ThemeProvider } from '../context/ThemeProvider';
-import { type AppStore, createAppStore } from '../store/store';
+import { type AppStore, createAppStore } from '@/store/store';
 
-interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
-  route?: string;
+type ExtendedRenderOptions = Omit<RenderOptions, 'wrapper'> & {
   store?: AppStore;
-}
+};
 
-interface WrapperProps {
+type WrapperProps = {
   children: ReactNode;
-}
+};
 
-export const renderWithProviders = (
+export function renderWithProviders(
   ui: ReactElement,
-  {
-    route = '/?page=1',
-    store = createAppStore(),
-    ...renderOptions
-  }: ExtendedRenderOptions = {},
-) => {
+  { store = createAppStore(), ...renderOptions }: ExtendedRenderOptions = {},
+) {
   function Wrapper({ children }: WrapperProps): ReactElement {
-    return (
-      <Provider store={store}>
-        <ThemeProvider>
-          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
-        </ThemeProvider>
-      </Provider>
-    );
+    return <Provider store={store}>{children}</Provider>;
   }
 
   return {
     store,
     ...render(ui, { wrapper: Wrapper, ...renderOptions }),
   };
-};
+}

@@ -118,3 +118,6 @@ dist-ssr
 .tern-port
 
 .vite/
+
+# Next.js generated types
+next-env.d.ts

@@ -1,35 +1,26 @@
-import type { ReactElement } from 'react';
-import { NavLink } from 'react-router';
+import { getTranslations } from 'next-intl/server';
+import { Suspense } from 'react';
 
-import { useTheme } from '../../hooks/useTheme';
+import LanguageSwitcher from '@/components/LanguageSwitcher/LanguageSwitcher';
+import { Link } from '@/i18n/navigation';
 
-function Header(): ReactElement {
-  const { theme, toggleTheme } = useTheme();
+export default async function Header() {
+  const t = await getTranslations('Navigation');
 
   return (
     <header className="app-header">
-      <div className="app-header__inner">
-        <nav className="navigation">
-          <NavLink to="/">Home</NavLink>
-          <NavLink to="/about">About</NavLink>
-        </nav>
+      <nav aria-label={t('primary')} className="app-nav">
+        <Link className="app-nav-link" href="/">
+          {t('home')}
+        </Link>
+        <Link className="app-nav-link" href="/about">
+          {t('about')}
+        </Link>
+      </nav>
 
-        <button
-          type="button"
-          className="theme-toggle"
-          onClick={toggleTheme}
-          aria-label={
-            theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-          }
-          title={
-            theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'
-          }
-        >
-          {theme === 'light' ? '🌙' : '☀️'}
-        </button>
-      </div>
+      <Suspense fallback={null}>
+        <LanguageSwitcher />
+      </Suspense>
     </header>
   );
 }
-
-export default Header;

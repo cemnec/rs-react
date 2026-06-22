@@ -4,12 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "build:gh-pages": "tsc -b && vite build --base=/rs-react/ && cp dist/index.html dist/404.html",
-    "deploy:gh-pages": "pnpm build:gh-pages && gh-pages -d dist",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint:css": "stylelint \"src/**/*.css\"",
+    "lint:css:fix": "stylelint \"src/**/*.css\" --fix",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -26,10 +28,11 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.12.0",
+    "next": "^16.2.9",
+    "next-intl": "^4.13.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-redux": "^9.3.0",
-    "react-router": "^7.15.0"
+    "react-redux": "^9.3.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -39,7 +42,6 @@
     "@types/node": "^24.12.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.5",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
@@ -48,15 +50,16 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "eslint-plugin-simple-import-sort": "^13.0.0",
-    "gh-pages": "^6.3.0",
     "globals": "^17.5.0",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.0.2",
     "prettier": "^3.8.3",
+    "stylelint": "^17.13.0",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-order": "^8.1.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
-    "vite": "^8.0.10",
     "vitest": "^4.1.5"
   }
 }

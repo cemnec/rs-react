@@ -1,9 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { mockSelectedRick } from '../test-utils/mockCharacters';
-import { createSelectedItemsCsv, downloadSelectedItemsCsv } from './csv';
+import { mockSelectedRick } from '@/test-utils/mockCharacters';
 
-describe('csv utils', () => {
+import { createSelectedItemsCsv } from './csv';
+
+describe('createSelectedItemsCsv', () => {
   it('creates CSV content for selected items', () => {
     const csv = createSelectedItemsCsv([mockSelectedRick]);
 
@@ -12,11 +13,11 @@ describe('csv utils', () => {
     );
 
     expect(csv).toContain(
-      '1,Rick Sanchez,"Human, Alive, Male",Alive,Human,Male,/characters/1',
+      '1,Rick Sanchez,"Human, Alive, Male",Alive,Human,Male,/?page=1&selectedId=1',
     );
   });
 
-  it('escapes CSV values with quotes and commas', () => {
+  it('escapes CSV values with commas and quotes', () => {
     const csv = createSelectedItemsCsv([
       {
         ...mockSelectedRick,
@@ -27,34 +28,9 @@ describe('csv utils', () => {
     expect(csv).toContain('"Rick, ""The Scientist"""');
   });
 
-  it('downloads CSV file using native browser APIs', () => {
-    const createObjectUrlMock = vi
-      .spyOn(URL, 'createObjectURL')
-      .mockReturnValue('blob:mock-url');
+  it('uses CRLF line separators', () => {
+    const csv = createSelectedItemsCsv([mockSelectedRick]);
 
-    const revokeObjectUrlMock = vi
-      .spyOn(URL, 'revokeObjectURL')
-      .mockImplementation(() => undefined);
-
-    const clickMock = vi.fn();
-
-    const createElementSpy = vi
-      .spyOn(document, 'createElement')
-      .mockReturnValue({
-        href: '',
-        download: '',
-        click: clickMock,
-      } as unknown as HTMLAnchorElement);
-
-    downloadSelectedItemsCsv([mockSelectedRick]);
-
-    expect(createObjectUrlMock).toHaveBeenCalledTimes(1);
-    expect(createElementSpy).toHaveBeenCalledWith('a');
-    expect(clickMock).toHaveBeenCalledTimes(1);
-    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:mock-url');
-
-    createObjectUrlMock.mockRestore();
-    revokeObjectUrlMock.mockRestore();
-    createElementSpy.mockRestore();
+    expect(csv).toContain('\r\n');
   });
 });
