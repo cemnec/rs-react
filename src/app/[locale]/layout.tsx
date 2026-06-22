@@ -1,6 +1,7 @@
 import '../globals.css';
 
 import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -8,6 +9,11 @@ import type { ReactNode } from 'react';
 
 import Header from '@/components/Header/Header';
 import { routing } from '@/i18n/routing';
+
+const inter = Inter({
+  subsets: ['latin', 'cyrillic'],
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'RS React Next.js',
@@ -34,7 +40,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale}>
-      <body>
+      <body className={inter.className}>
         <NextIntlClientProvider>
           <div className="app-shell">
             <Header />
