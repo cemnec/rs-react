@@ -1,7 +1,9 @@
 import Image from 'next/image';
 
+import SelectCharacterCheckbox from '@/components/SelectCharacterCheckbox/SelectCharacterCheckbox';
 import { Link } from '@/i18n/navigation';
 import type { Character } from '@/types/character';
+import type { SelectedItem } from '@/types/selectedItem';
 
 type Props = {
   character: Character;
@@ -28,7 +30,21 @@ function buildCharacterHref({
     params.set('query', query);
   }
 
-  return `/?${params}`;
+  return `/?${params.toString()}`;
+}
+
+function mapCharacterToSelectedItem(
+  character: Character,
+  detailsUrl: string,
+): SelectedItem {
+  return {
+    detailsUrl,
+    gender: character.gender,
+    id: character.id,
+    name: character.name,
+    species: character.species,
+    status: character.status,
+  };
 }
 
 export default function CharacterCard({
@@ -39,32 +55,42 @@ export default function CharacterCard({
 }: Props) {
   const isSelected = selectedId === String(character.id);
 
+  const detailsHref = buildCharacterHref({
+    query,
+    page,
+    selectedId: character.id,
+  });
+
   return (
     <li>
-      <Link
-        aria-current={isSelected ? 'true' : undefined}
+      <article
         className={`character-card${isSelected ? ' character-card--selected' : ''}`}
-        href={buildCharacterHref({
-          query,
-          page,
-          selectedId: character.id,
-        })}
       >
-        <Image
-          alt={character.name}
-          className="character-card__image"
-          height={120}
-          src={character.image}
-          width={120}
+        <SelectCharacterCheckbox
+          item={mapCharacterToSelectedItem(character, detailsHref)}
         />
 
-        <span className="character-card__content">
-          <strong>{character.name}</strong>
-          <span>
-            {character.status} — {character.species}
+        <Link
+          aria-current={isSelected ? 'true' : undefined}
+          className="character-card__link"
+          href={detailsHref}
+        >
+          <Image
+            alt={character.name}
+            className="character-card__image"
+            height={120}
+            src={character.image}
+            width={120}
+          />
+
+          <span className="character-card__content">
+            <strong>{character.name}</strong>
+            <span>
+              {character.status} — {character.species}
+            </span>
           </span>
-        </span>
-      </Link>
+        </Link>
+      </article>
     </li>
   );
 }

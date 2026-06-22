@@ -42,5 +42,14 @@
   },
   "LanguageSwitcher": {
     "label": "Язык"
+  },
+  "SelectCharacterCheckbox": {
+    "label": "Выбрать"
+  },
+  "SelectedItemsFlyout": {
+    "count": "{count, plural, one {Выбран # персонаж} few {Выбрано # персонажа} many {Выбрано # персонажей} other {Выбрано # персонажа}}",
+    "download": "Скачать CSV",
+    "downloading": "Скачивание...",
+    "clear": "Очистить"
   }
 }

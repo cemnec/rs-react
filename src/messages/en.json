@@ -42,5 +42,14 @@
   },
   "LanguageSwitcher": {
     "label": "Language"
+  },
+  "SelectCharacterCheckbox": {
+    "label": "Select"
+  },
+  "SelectedItemsFlyout": {
+    "count": "{count, plural, one {# selected character} other {# selected characters}}",
+    "download": "Download CSV",
+    "downloading": "Downloading...",
+    "clear": "Clear"
   }
 }

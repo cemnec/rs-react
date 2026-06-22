@@ -8,6 +8,8 @@ import { setRequestLocale } from 'next-intl/server';
 import type { ReactNode } from 'react';
 
 import Header from '@/components/Header/Header';
+import Providers from '@/components/Providers/Providers';
+import SelectedItemsFlyout from '@/components/SelectedItemsFlyout/SelectedItemsFlyout';
 import { routing } from '@/i18n/routing';
 
 const inter = Inter({
@@ -42,10 +44,13 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale}>
       <body className={inter.className}>
         <NextIntlClientProvider>
-          <div className="app-shell">
-            <Header />
-            <main className="app-main">{children}</main>
-          </div>
+          <Providers>
+            <div className="app-shell">
+              <Header />
+              <main className="app-main">{children}</main>
+              <SelectedItemsFlyout />
+            </div>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>
